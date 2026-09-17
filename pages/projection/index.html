@@ -44,8 +44,8 @@
 
       <section class="card" aria-labelledby="relation-title">
         <h2 id="relation-title">Incremental pressure correction</h2>
-        <div class="equation" aria-label="Pressure correction Poisson equation">D<sub>h</sub>G<sub>h</sub> φ = (1 / Δt) D<sub>h</sub> <strong>û</strong><sup>*</sup></div>
-        <div class="equation" aria-label="Corrected face velocity equation"><strong>û</strong><sup>n+1</sup> = <strong>û</strong><sup>*</sup> − ΔtG<sub>h</sub>φ</div>
+        <div class="equation" aria="Pressure correction Poisson equation">D<sub>h</sub>G<sub>h</sub> φ = (1 / Δt) D<sub>h</sub> <strong>û</strong><sup>*</sup></div>
+        <div class="equation" aria="Corrected face velocity equation"><strong>û</strong><sup>n+1</sup> = <strong>û</strong><sup>*</sup> − ΔtG<sub>h</sub>φ</div>
         <p>The matrix-free compact pressure operator is applied as D<sub>h</sub>G<sub>h</sub>. The face-normal velocity is corrected by the pressure increment; compact interpolation then returns a nodal representation for the following timestep.</p>
         <p class="callout">The prescribed divergence criterion applies to the corrected staggered face-velocity field. The interpolated nodal field is not assigned that certification.</p>
       </section>
