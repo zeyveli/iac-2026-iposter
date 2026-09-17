@@ -1,17 +1,17 @@
 :root {
   --itu-blue: #173b8f;
   --itu-blue-2: #245eb6;
-  --warm: #a84d1c;
+  --warm: #f45c8b;
   --reference: #1f2937;
   --numerical: #1572a1;
-  --pressure: #a84d1c;
+  --pressure: #f45c8b;
   --ink: #182239;
   --muted: #596579;
   --line: #d6dce5;
   --panel: #f7f8f6;
   --paper: #ffffff;
   --soft-blue: #eaf2fb;
-  --soft-warm: #fff1e7;
+  --soft-warm: #f9d0e4;
   --radius: 22px;
   font-family: Inter, Aptos, "Segoe UI", Arial, sans-serif;
   color: var(--ink);
