@@ -41,3 +41,23 @@ test('validation export preserves the error bound and explicitly identifies meas
   assert.ok(svg.includes('Numerical'));
   assert.ok(svg.includes('0.11192%'));
 });
+
+test('iframe theme and generated graphics use the manuscript pink accent consistently', () => {
+  const themedFiles = [
+    'assets/css/style.css',
+    ...files.map(([name]) => name)
+  ];
+
+  for (const name of themedFiles) {
+    const contents = readFileSync(root + name, 'utf8').toLowerCase();
+    assert.ok(contents.includes('#f45c8b'), `${name} must use the manuscript pink accent`);
+    assert.doesNotMatch(contents, /#a84d1c/, `${name} must not retain the former orange accent`);
+  }
+
+  const css = readFileSync(root + 'assets/css/style.css', 'utf8').toLowerCase();
+  assert.ok(css.includes('#f9d0e4'), 'iframe theme must include the pale manuscript pink');
+  for (const [name] of files) {
+    const svg = readFileSync(root + name, 'utf8').toLowerCase();
+    assert.doesNotMatch(svg, /#(?:fff1e7|fbf1e8)/, `${name} must not retain a pale orange background`);
+  }
+});
