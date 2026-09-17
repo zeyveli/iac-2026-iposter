@@ -139,17 +139,12 @@
           addVelocityNodes("u*, v*");
           addPressureNodes("pⁿ");
         } else if (activeStage === 3) {
-          addVelocityNodes("");
           addPressureNodes("pⁿ");
-          addInterpolationArcs();
           addFaceNodes("û*", "v̂*");
         } else if (activeStage === 4) {
-          addVelocityNodes("");
           addPressureNodes("pⁿ⁺¹", true);
           addFaceNodes("ûⁿ⁺¹", "v̂ⁿ⁺¹");
-          svg.append(svgEl("path", { class: "field", d: "M235 170h50m-18-15 18 15-18 15 M365 300h50m-18-15 18 15-18 15" }));
         } else {
-          svg.append(svgEl("path", { class: "field", d: "M195 132 C300 60 400 70 520 125 M195 262 C310 190 410 205 520 255" }));
           addVelocityNodes("uⁿ⁺¹, vⁿ⁺¹");
           addPressureNodes("pⁿ⁺¹");
         }
