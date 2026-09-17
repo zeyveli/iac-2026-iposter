@@ -20,16 +20,16 @@ test("compact discretization page presents an interactive, accurate resolution c
   assert.match(html, /\.\.\/\.\.\/assets\/js\/common\.js/);
 });
 
-test("compact chart uses omega notation and anchors the sample label above-right", async () => {
+test("compact chart uses omega notation and anchors the sample label above-left", async () => {
   const html = await readFile(route("compact"), "utf8");
 
   assert.match(html, /wavenumber, ω/);
   assert.match(html, /modified wavenumber, ω′/u);
   assert.match(html, /ω′<\/i>\s*=\s*<i>ω/u);
   assert.match(html, /metric\("ω",/u);
-  assert.match(html, /x:\s*x\(theta\)\s*\+\s*16/);
+  assert.match(html, /x:\s*x\(theta\)\s*-\s*16/);
   assert.match(html, /y:\s*y\(kStar\)\s*-\s*16/);
-  assert.match(html, /"text-anchor":\s*"start"/);
+  assert.match(html, /"text-anchor":\s*"end"/);
 });
 
 test("half-staggered projection page has five interactive stages and approved relations", async () => {
