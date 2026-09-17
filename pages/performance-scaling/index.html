@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timestep scaling</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .chart { min-height: 22rem; }
+    .axis { stroke: #8a96a8; stroke-width: 1.5; }
+    .gridline { stroke: #e3e7ed; stroke-width: 1; }
+    .measured { fill: none; stroke: var(--itu-blue); stroke-width: 5; }
+    .ideal { fill: none; stroke: var(--warm); stroke-width: 4; stroke-dasharray: 12 9; }
+    .point { fill: var(--itu-blue); stroke: white; stroke-width: 4; cursor: pointer; }
+    .context-point { fill: #9aa5b4; }
+    .mark:focus { outline: none; }
+    .mark:focus .point, .mark:hover .point { fill: var(--warm); }
+    .tick, .label { fill: var(--muted); font-size: 18px; }
+    .case-label { fill: var(--ink); font-size: 20px; font-weight: 750; }
+    .ratio { fill: var(--warm); font-size: 20px; font-weight: 800; }
+    .detail { min-height: 4.5rem; }
+    .detail strong { color: var(--itu-blue); }
+    .measured-key { --swatch: var(--itu-blue); }
+    .ideal-key { --swatch: var(--warm); }
+    @media (max-width: 600px) { .chart { min-height: 17rem; } .tick, .label { font-size: 21px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">GPU performance · scaling</p>
+    <h1>Approximately linear timestep scaling</h1>
+    <p class="lede">Measured median timestep follows ideal eightfold growth once the grid is large enough to occupy the GPU effectively.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Measured versus ideal</h2>
+        <div class="legend" aria-hidden="true">
+          <span class="measured-key">Measured median</span>
+          <span class="ideal-key">Ideal from G2</span>
+        </div>
+        <svg id="chart" class="chart" viewBox="0 0 900 540" role="img" aria-labelledby="chart-title chart-desc">
+          <title id="chart-title">Median timestep and ideal linear scaling for four GPU benchmark grids</title>
+          <desc id="chart-desc">G2 through G4 are emphasized. Interactive marks expose the measured timestep and grid metadata.</desc>
+        </svg>
+        <p id="detail" class="detail" role="status" aria-live="polite">Hover or focus a case to inspect its median timestep.</p>
+      </section>
+
+      <aside>
+        <div class="metric">
+          <div><strong>7.90×</strong><span>G2 → G3 time</span></div>
+          <div><strong>8.50×</strong><span>G3 → G4 time</span></div>
+        </div>
+        <div class="callout" style="margin-top: 16px">
+          <strong>Interpret G1 as context</strong>
+          <p>The smallest case does not fully occupy the GPU, so scaling conclusions emphasize G2–G4.</p>
+        </div>
+        <p class="caption">Each refinement increases node count by 8×. Ideal values are anchored to the measured G2 median.</p>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
