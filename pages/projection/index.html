@@ -13,9 +13,13 @@
       .pressure { fill: #f45c8b; }
       .face { fill: #1572a1; }
       .field { stroke: #1572a1; stroke-width: 4; fill: none; stroke-linecap: round; }
+      .interpolation-arc { stroke: #1572a1; stroke-width: 3; fill: none; stroke-linecap: round; }
       .pulse { fill: #f45c8b; opacity: .18; }
       .diagram-label { fill: #182239; font-size: 19px; font-weight: 650; }
       .diagram-note { fill: #596579; font-size: 16px; }
+      .state-label { fill: #173b8f; font-size: 14px; font-weight: 700; }
+      .face-label { fill: #116987; font-size: 14px; font-weight: 700; }
+      .pressure-label { fill: #c72f67; font-size: 14px; font-weight: 700; }
     </style>
   </head>
   <body>
@@ -51,7 +55,7 @@
       import { makeSvg, setPressed, svgEl } from "../../assets/js/common.js";
 
       const stages = [
-        ["Nodal velocity and cell-centred pressure", "Blue circles mark nodal velocity components. Orange squares mark pressure at the centre of each cell."],
+        ["Nodal velocity and cell-centred pressure", "Blue circles mark nodal velocity components. Pink squares mark pressure at the centre of each cell."],
         ["AB2 momentum predictor", "The Adams–Bashforth predictor advances the nodal velocity to an intermediate state before projection."],
         ["Compact interpolation to faces", "Repeated sixth-order compact midpoint interpolation supplies face-normal intermediate velocity for staggered operations."],
         ["Pressure solve and correction", "The pressure increment is obtained from DₕGₕφ = (1 / Δt)Dₕû*. Its gradient corrects the face-normal velocity."],
@@ -62,10 +66,24 @@
       const description = document.querySelector("#stage-description");
       let activeStage = 1;
 
+      const left = 170, top = 105, spacing = 130, columns = 4, rows = 3;
+      const velocityNodes = Array.from({ length: rows }, (_, row) =>
+        Array.from({ length: columns }, (_, col) => [left + col * spacing, top + row * spacing])
+      ).flat();
+      const pressureNodes = Array.from({ length: rows - 1 }, (_, row) =>
+        Array.from({ length: columns - 1 }, (_, col) => [left + (col + 0.5) * spacing, top + (row + 0.5) * spacing])
+      ).flat();
+      const horizontalFaces = Array.from({ length: rows }, (_, row) =>
+        Array.from({ length: columns - 1 }, (_, col) => [left + (col + 0.5) * spacing, top + row * spacing])
+      ).flat();
+      const verticalFaces = Array.from({ length: rows - 1 }, (_, row) =>
+        Array.from({ length: columns }, (_, col) => [left + col * spacing, top + (row + 0.5) * spacing])
+      ).flat();
+      const staggeredCount = horizontalFaces.length + verticalFaces.length;
+
       function drawGrid() {
         const [title, copy] = stages[activeStage - 1];
         const svg = makeSvg(target, `${title}: half-staggered projection grid`, "0 0 920 500");
-        const left = 170, top = 105, spacing = 130, columns = 4, rows = 3;
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < columns; col += 1) {
             const x = left + col * spacing, y = top + row * spacing;
@@ -73,31 +91,69 @@
             if (row < rows - 1) svg.append(svgEl("line", { class: "grid-line", x1: x, y1: y, x2: x, y2: y + spacing }));
           }
         }
-        if (activeStage === 2) {
-          svg.append(svgEl("path", { class: "field", d: "M205 80h58m-18-15 18 15-18 15 M335 210h58m-18-15 18 15-18 15 M465 340h58m-18-15 18 15-18 15" }));
+
+        function addVelocityNodes(label) {
+          velocityNodes.forEach(([cx, cy]) => {
+            svg.append(svgEl("circle", { class: "node", cx, cy, r: 8 }));
+            if (label) svg.append(svgEl("text", { class: "state-label", x: cx + 11, y: cy - 11 }, label));
+          });
         }
-        if (activeStage >= 3) {
-          [[235,105], [300,170], [365,235], [430,300], [495,365]].forEach(([cx, cy]) => {
+
+        function addPressureNodes(label, halo = false) {
+          pressureNodes.forEach(([cx, cy]) => {
+            if (halo) svg.append(svgEl("circle", { class: "pulse", cx, cy, r: 38 }));
+            svg.append(svgEl("rect", { class: "pressure", x: cx - 8, y: cy - 8, width: 16, height: 16, rx: 2 }));
+            svg.append(svgEl("text", { class: "pressure-label", x: cx + 13, y: cy + 5 }, label));
+          });
+        }
+
+        function addFaceNodes(horizontalLabel, verticalLabel) {
+          horizontalFaces.forEach(([cx, cy]) => {
             svg.append(svgEl("circle", { class: "face", cx, cy, r: 8 }));
+            svg.append(svgEl("text", { class: "face-label", x: cx, y: cy - 13, "text-anchor": "middle" }, horizontalLabel));
+          });
+          verticalFaces.forEach(([cx, cy]) => {
+            svg.append(svgEl("circle", { class: "face", cx, cy, r: 8 }));
+            svg.append(svgEl("text", { class: "face-label", x: cx + 13, y: cy + 5 }, verticalLabel));
           });
         }
-        if (activeStage === 4) {
-          [[235,170], [365,170], [235,300], [365,300]].forEach(([cx, cy]) => {
-            svg.append(svgEl("circle", { class: "pulse", cx, cy, r: 44 }));
-          });
+
+        function addInterpolationArcs() {
+          const defs = svgEl("defs");
+          const marker = svgEl("marker", { id: "interpolation-arrow", markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: "auto", markerUnits: "strokeWidth" });
+          marker.append(svgEl("path", { d: "M0,0 L8,4 L0,8 Z", fill: "#1572a1" }));
+          defs.append(marker);
+          svg.append(defs);
+          [
+            "M170 105 Q202 73 232 101",
+            "M300 105 Q268 73 238 101",
+            "M170 105 Q138 137 166 167",
+            "M170 235 Q138 203 166 173"
+          ].forEach(d => svg.append(svgEl("path", { class: "interpolation-arc", d, "marker-end": "url(#interpolation-arrow)" })));
+        }
+
+        if (activeStage === 1) {
+          addVelocityNodes("uⁿ, vⁿ");
+          addPressureNodes("pⁿ");
+        } else if (activeStage === 2) {
+          addVelocityNodes("u*, v*");
+          addPressureNodes("pⁿ");
+        } else if (activeStage === 3) {
+          addVelocityNodes("");
+          addPressureNodes("pⁿ");
+          addInterpolationArcs();
+          addFaceNodes("û*", "v̂*");
+        } else if (activeStage === 4) {
+          addVelocityNodes("");
+          addPressureNodes("pⁿ⁺¹", true);
+          addFaceNodes("ûⁿ⁺¹", "v̂ⁿ⁺¹");
           svg.append(svgEl("path", { class: "field", d: "M235 170h50m-18-15 18 15-18 15 M365 300h50m-18-15 18 15-18 15" }));
-        }
-        if (activeStage === 5) {
+        } else {
           svg.append(svgEl("path", { class: "field", d: "M195 132 C300 60 400 70 520 125 M195 262 C310 190 410 205 520 255" }));
+          addVelocityNodes("uⁿ⁺¹, vⁿ⁺¹");
+          addPressureNodes("pⁿ⁺¹");
         }
-        for (let row = 0; row < rows; row += 1) {
-          for (let col = 0; col < columns; col += 1) {
-            svg.append(svgEl("circle", { class: "node", cx: left + col * spacing, cy: top + row * spacing, r: 8 }));
-            if (col < columns - 1 && row < rows - 1) {
-              svg.append(svgEl("rect", { class: "pressure", x: left + col * spacing + spacing / 2 - 8, y: top + row * spacing + spacing / 2 - 8, width: 16, height: 16, rx: 2 }));
-            }
-          }
-        }
+
         svg.append(svgEl("circle", { class: "node", cx: 655, cy: 116, r: 8 }));
         svg.append(svgEl("text", { class: "diagram-label", x: 678, y: 122 }, "velocity at node"));
         svg.append(svgEl("rect", { class: "pressure", x: 647, y: 161, width: 16, height: 16, rx: 2 }));
@@ -105,7 +161,7 @@
         svg.append(svgEl("circle", { class: "face", cx: 655, cy: 220, r: 8 }));
         svg.append(svgEl("text", { class: "diagram-label", x: 678, y: 226 }, "face-normal location"));
         svg.append(svgEl("text", { class: "diagram-label", x: 170, y: 445 }, `${activeStage}. ${title}`));
-        svg.append(svgEl("text", { class: "diagram-note", x: 170, y: 474 }, "blue: velocity nodes · orange: pressure centres · teal: staggered face-normal values"));
+        svg.append(svgEl("text", { class: "diagram-note", x: 170, y: 474 }, `blue: velocity nodes · pink: pressure centres · teal: ${staggeredCount} staggered face-normal values`));
         description.textContent = copy;
       }
 
