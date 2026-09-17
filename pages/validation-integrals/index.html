@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blasius integral quantities</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .error-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin: 18px 0 24px; }
+    .error-card { padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft-blue); }
+    .error-card[data-active="true"] { border-color: var(--itu-blue); box-shadow: inset 0 0 0 1px var(--itu-blue); }
+    .error-card span { display: block; color: var(--muted); font-size: .78rem; }
+    .error-card strong { display: block; margin-top: 4px; color: var(--itu-blue); font-size: clamp(1.1rem,2.4vw,1.65rem); }
+    .chart-shell { position: relative; min-height: 320px; }
+    .chart-tooltip { position: absolute; z-index: 2; min-width: 175px; padding: 9px 11px; border-radius: 10px; color: white; background: rgba(24,34,57,.94); box-shadow: 0 8px 24px rgba(24,34,57,.22); font-size: .82rem; line-height: 1.45; pointer-events: none; transform: translate(12px,-50%); }
+    .chart-tooltip[hidden] { display: none; }
+    .legend .analytical { --swatch: var(--reference); }
+    .legend .numerical { --swatch: var(--numerical); }
+    .status, .source-note { color: var(--muted); font-size: .86rem; }
+    .provenance { margin-top: 18px; border-left: 4px solid var(--warm); padding: 10px 14px; background: var(--soft-warm); border-radius: 0 12px 12px 0; font-size: .9rem; }
+    @media (max-width: 720px) { .error-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 420px) { .error-grid { grid-template-columns: 1fr; } .chart-shell { min-height: 250px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">Validation · integral quantities</p>
+    <h1>Blasius agreement along the plate</h1>
+    <p class="lede">Select a boundary-layer quantity to compare the latest exported CFD checkpoint with the analytical Blasius trend.</p>
+
+    <section class="card" aria-labelledby="error-heading">
+      <h2 id="error-heading">Manuscript maximum relative errors</h2>
+      <div class="error-grid" aria-label="Maximum relative errors">
+        <div class="error-card" data-error-card="deltaStar" data-active="true"><span>Displacement thickness δ*</span><strong>0.06025%</strong></div>
+        <div class="error-card" data-error-card="theta"><span>Momentum thickness θ</span><strong>0.06684%</strong></div>
+        <div class="error-card" data-error-card="H12"><span>Shape factor H₁₂</span><strong>0.03086%</strong></div>
+        <div class="error-card" data-error-card="Cf"><span>Skin-friction coefficient C<sub>f</sub></span><strong>0.11192%</strong></div>
+      </div>
+
+      <p class="control-label">Displayed quantity</p>
+      <div class="controls" id="metric-controls" role="group" aria-label="Displayed boundary-layer quantity">
+        <button type="button" data-metric="deltaStar" aria-pressed="true">δ* displacement</button>
+        <button type="button" data-metric="theta" aria-pressed="false">θ momentum</button>
+        <button type="button" data-metric="H12" aria-pressed="false">H₁₂ shape factor</button>
+        <button type="button" data-metric="Cf" aria-pressed="false">C<sub>f</sub> skin friction</button>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span class="numerical">Numerical CFD checkpoint</span>
+        <span class="analytical">Analytical Blasius</span>
+      </div>
+      <div class="chart-shell">
+        <div id="integral-chart" aria-live="polite"></div>
+        <div class="chart-tooltip" id="integral-tooltip" role="status" hidden></div>
+      </div>
+      <p class="status" id="integral-status">Loading diagnostic data…</p>
+      <p class="provenance"><strong>Provenance:</strong> every plotted value comes from the manuscript-generating qualification export <code>base_qualification.csv</code>. Numerical values and their independent ODE-Blasius references are paired station by station; the cards above are the maxima of the exported relative-error columns.</p>
+      <p class="source-note">Analytical reference: ODE-Blasius values produced by the manuscript qualification analysis, not reconstructed from the CFD values or error columns.</p>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
