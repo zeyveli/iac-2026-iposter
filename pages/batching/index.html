@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Batched GPU line solves</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+      .formula { color: var(--itu-blue); font-size: clamp(1.05rem, 2.2vw, 1.35rem); font-weight: 750; }
+      .split-note { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+      .split-note > div { background: var(--panel); border-radius: 14px; padding: 14px; min-width: 0; }
+      .svg-panel { fill: #fff; stroke: #d6dce5; stroke-width: 2; }
+      .svg-label { fill: #182239; font: 600 19px Inter, Arial, sans-serif; }
+      .svg-small { fill: #596579; font: 16px Inter, Arial, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="eyebrow">Method · GPU compact operators</div>
+      <h1>Batched GPU line solves</h1>
+      <p class="lede">A sixth-order compact derivative produces many independent tridiagonal systems. The GPU works across those systems; each selected grid line remains one direct tridiagonal solve.</p>
+
+      <section class="card" aria-labelledby="direction-title">
+        <h2 id="direction-title">Choose a compact-operator direction</h2>
+        <div class="controls" role="group" aria-label="Line direction">
+          <button type="button" data-direction="x" aria-pressed="true">x direction</button>
+          <button type="button" data-direction="y" aria-pressed="false">y direction</button>
+          <button type="button" data-direction="z" aria-pressed="false">z direction</button>
+        </div>
+        <p class="formula" id="batch-equation" aria-live="polite"></p>
+        <div id="batch-graphic"></div>
+        <p class="caption" id="batch-caption"></p>
+      </section>
+
+      <section class="grid" aria-label="Batched solve details">
+        <article class="card">
+          <h2>What is batched?</h2>
+          <div class="metric" id="batch-metrics"></div>
+          <p>On a uniform grid, the compact operator has the same left-hand-side coefficients for every parallel line. One factorization can therefore be reused for the whole batch.</p>
+        </article>
+        <article class="card">
+          <h2>Coalesced access, no main-path transpose</h2>
+          <div id="memory-graphic"></div>
+          <p class="caption">The storage order is arranged so adjacent threads read adjacent line data for the selected pass. Direction-aware indexing keeps the compact-operator path coalesced without an explicit global transpose.</p>
+        </article>
+      </section>
+
+      <aside class="callout" id="parallelism-note"></aside>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
