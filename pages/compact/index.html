@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compact discretization resolution</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+      .chart-wrap { min-width: 0; }
+      .choice { background: var(--soft-blue); border-radius: 12px; padding: .7rem .9rem; color: var(--itu-blue); }
+      .choice strong { display: block; font-size: 1.08rem; }
+      .chart-note { min-height: 2.5rem; }
+      .axis { stroke: #596579; stroke-width: 1.5; }
+      .gridline { stroke: #d6dce5; stroke-width: 1; }
+      .axis-label { fill: #596579; font-size: 20px; }
+      .tick { fill: #596579; font-size: 18px; }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <p class="eyebrow">Method · compact spatial discretization</p>
+      <h1>Resolution close to the grid limit</h1>
+      <p class="lede">The sixth-order compact first derivative retains a modified wavenumber close to the exact value farther into the resolvable range than explicit centred formulas.</p>
+
+      <section class="card" aria-labelledby="comparison-title">
+        <h2 id="comparison-title">Modified wavenumber comparison</h2>
+        <p>For a Fourier mode with nondimensional wavenumber <i>θ</i> = <i>kh</i>, an ideal derivative has <i>k</i><sup>*</sup><i>h</i> = <i>θ</i>. The plotted curves use the exact symbols of the second-, fourth-, sixth-order explicit and sixth-order compact centred first-derivative operators.</p>
+        <div class="legend" aria-label="Curve legend">
+          <span style="--swatch:#1f2937">Exact</span>
+          <span style="--swatch:#8b5a2b">Second-order explicit</span>
+          <span style="--swatch:#6487b6">Fourth-order explicit</span>
+          <span style="--swatch:#4d9a89">Sixth-order explicit</span>
+          <span style="--swatch:#173b8f">Sixth-order compact</span>
+        </div>
+        <div id="resolution-chart" class="chart-wrap" aria-live="polite"></div>
+        <p class="caption">All curves vanish at the Nyquist mode because a centred first-derivative stencil cannot distinguish its alternating samples.</p>
+      </section>
+
+      <section class="card" aria-labelledby="sampling-title">
+        <h2 id="sampling-title">Inspect a sampled wavelength</h2>
+        <p>Choose a points-per-wavelength value. The marker locates its resolved wavenumber on the compact curve and reports the relative derivative amplitude.</p>
+        <div id="scheme-controls" class="controls" role="group" aria-label="Points per wavelength">
+          <button type="button" data-ppw="4" aria-pressed="false">4 points / λ</button>
+          <button type="button" data-ppw="6" aria-pressed="true">6 points / λ</button>
+          <button type="button" data-ppw="8" aria-pressed="false">8 points / λ</button>
+          <button type="button" data-ppw="12" aria-pressed="false">12 points / λ</button>
+        </div>
+        <div id="sampling-result" class="metric" aria-live="polite"></div>
+        <p class="callout chart-note">Compact relations couple neighbouring derivative values through a tridiagonal line solve, yielding spectral-like short-wavelength resolution without a separate explicit filter.</p>
+      </section>
+    </main>
+
+    <script type="module">
+      import { linePath, makeSvg, setPressed, svgEl } from "../../assets/js/common.js";
+
+      const palette = {
+        exact: "#1f2937", second: "#8b5a2b", fourth: "#6487b6",
+        sixth: "#4d9a89", compact: "#173b8f"
+      };
+      const chart = document.querySelector("#resolution-chart");
+      const output = document.querySelector("#sampling-result");
+      const buttons = [...document.querySelectorAll("#scheme-controls button")];
+      let pointsPerWavelength = 6;
+
+      // Fourier symbols for centred first-derivative approximations, all in k*h.
+      function compactModifiedWavenumber(theta) {
+        const alpha = 1 / 3;
+        return ((14 / 9) * Math.sin(theta) + (1 / 18) * Math.sin(2 * theta)) /
+          (1 + 2 * alpha * Math.cos(theta));
+      }
+      const modifiedWavenumber = {
+        exact: theta => theta,
+        second: theta => Math.sin(theta),
+        fourth: theta => (8 * Math.sin(theta) - Math.sin(2 * theta)) / 6,
+        sixth: theta => (45 * Math.sin(theta) - 9 * Math.sin(2 * theta) + Math.sin(3 * theta)) / 30,
+        compact: compactModifiedWavenumber
+      };
+
+      function drawChart() {
+        const svg = makeSvg(chart, "Modified-wavenumber comparison for centred finite-difference derivatives", "0 0 920 560");
+        const margin = { left: 92, right: 30, top: 28, bottom: 78 };
+        const width = 920 - margin.left - margin.right;
+        const height = 560 - margin.top - margin.bottom;
+        const x = theta => margin.left + (theta / Math.PI) * width;
+        const y = value => margin.top + height - (value / Math.PI) * height;
+
+        [0, Math.PI / 2, Math.PI].forEach(value => {
+          svg.append(svgEl("line", { class: "gridline", x1: x(value), x2: x(value), y1: margin.top, y2: margin.top + height }));
+        });
+        [0, Math.PI / 2, Math.PI].forEach(value => {
+          svg.append(svgEl("line", { class: "gridline", x1: margin.left, x2: margin.left + width, y1: y(value), y2: y(value) }));
+        });
+        svg.append(svgEl("line", { class: "axis", x1: margin.left, x2: margin.left + width, y1: margin.top + height, y2: margin.top + height }));
+        svg.append(svgEl("line", { class: "axis", x1: margin.left, x2: margin.left, y1: margin.top, y2: margin.top + height }));
+
+        [[0, "0"], [Math.PI / 2, "π/2"], [Math.PI, "π"]].forEach(([value, label]) => {
+          svg.append(svgEl("text", { class: "tick", x: x(value), y: margin.top + height + 30, "text-anchor": "middle" }, label));
+          svg.append(svgEl("text", { class: "tick", x: margin.left - 14, y: y(value) + 6, "text-anchor": "end" }, label));
+        });
+        svg.append(svgEl("text", { class: "axis-label", x: margin.left + width / 2, y: 546, "text-anchor": "middle" }, "nondimensional wavenumber, θ = kh"));
+        svg.append(svgEl("text", { class: "axis-label", transform: `translate(27 ${margin.top + height / 2}) rotate(-90)`, "text-anchor": "middle" }, "modified wavenumber, k*h"));
+
+        Object.entries(modifiedWavenumber).forEach(([name, fn]) => {
+          const values = Array.from({ length: 161 }, (_, index) => {
+            const theta = (index / 160) * Math.PI;
+            return [theta, fn(theta)];
+          });
+          svg.append(svgEl("path", {
+            d: linePath(values, x, y), fill: "none", stroke: palette[name],
+            "stroke-width": name === "compact" ? 5 : 3,
+            "stroke-dasharray": name === "exact" ? "10 7" : ""
+          }));
+        });
+
+        const theta = (2 * Math.PI) / pointsPerWavelength;
+        const kStar = compactModifiedWavenumber(theta);
+        svg.append(svgEl("line", { x1: x(theta), x2: x(theta), y1: y(0), y2: y(kStar), stroke: "#a84d1c", "stroke-width": 3, "stroke-dasharray": "7 6" }));
+        svg.append(svgEl("circle", { cx: x(theta), cy: y(kStar), r: 8, fill: "#a84d1c", stroke: "white", "stroke-width": 3 }));
+        svg.append(svgEl("text", { x: x(theta) + 10, y: y(kStar) - 12, fill: "#a84d1c", "font-size": 19, "font-weight": 700 }, `${pointsPerWavelength} points / λ`));
+      }
+
+      function update() {
+        const theta = (2 * Math.PI) / pointsPerWavelength;
+        const compact = compactModifiedWavenumber(theta);
+        const ratio = (compact / theta) * 100;
+        output.replaceChildren(
+          metric("Points / wavelength", pointsPerWavelength.toString()),
+          metric("kh", theta.toFixed(3)),
+          metric("Compact amplitude", `${ratio.toFixed(1)}%`)
+        );
+        drawChart();
+      }
+
+      function metric(label, value) {
+        const box = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = value;
+        box.append(strong, document.createTextNode(label));
+        return box;
+      }
+
+      buttons.forEach(button => button.addEventListener("click", () => {
+        pointsPerWavelength = Number(button.dataset.ppw);
+        setPressed(buttons, button);
+        update();
+      }));
+      update();
+    </script>
+  </body>
+</html>
