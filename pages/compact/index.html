@@ -116,7 +116,7 @@
         const kStar = compactModifiedWavenumber(theta);
         svg.append(svgEl("line", { x1: x(theta), x2: x(theta), y1: y(0), y2: y(kStar), stroke: "#f45c8b", "stroke-width": 3, "stroke-dasharray": "7 6" }));
         svg.append(svgEl("circle", { cx: x(theta), cy: y(kStar), r: 8, fill: "#f45c8b", stroke: "white", "stroke-width": 3 }));
-        svg.append(svgEl("text", { x: x(theta) + 16, y: y(kStar) - 16, fill: "#f45c8b", "font-size": 19, "font-weight": 700, "text-anchor": "start" }, `${pointsPerWavelength} points / λ`));
+        svg.append(svgEl("text", { x: x(theta) - 16, y: y(kStar) - 16, fill: "#f45c8b", "font-size": 19, "font-weight": 700, "text-anchor": "end" }, `${pointsPerWavelength} points / λ`));
       }
 
       function update() {
