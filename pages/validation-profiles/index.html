@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blasius similarity profiles</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .chart-shell { position: relative; min-height: 320px; }
+    .chart-tooltip { position: absolute; z-index: 2; min-width: 170px; padding: 9px 11px; border-radius: 10px; color: white; background: rgba(24,34,57,.94); box-shadow: 0 8px 24px rgba(24,34,57,.22); font-size: .82rem; line-height: 1.45; pointer-events: none; transform: translate(12px,-50%); }
+    .chart-tooltip[hidden] { display: none; }
+    .chart-status { min-height: 1.4em; color: var(--muted); font-size: .9rem; }
+    .control-group { margin-top: 18px; }
+    .control-label { margin: 0 0 6px; color: var(--muted); font-size: .78rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .legend .analytical { --swatch: var(--reference); }
+    .legend .numerical { --swatch: var(--numerical); }
+    .source-note { margin-bottom: 0; color: var(--muted); font-size: .84rem; }
+    @media (max-width: 560px) { .chart-shell { min-height: 250px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">Validation · similarity collapse</p>
+    <h1>Numerical profiles follow the Blasius solution</h1>
+    <p class="lede">Choose a streamwise station, compare the exported CFD profile with the analytical similarity solution, and move across the chart for point values.</p>
+
+    <section class="card" aria-labelledby="profile-heading">
+      <h2 id="profile-heading">Velocity profile</h2>
+      <div class="control-group">
+        <p class="control-label">Streamwise station</p>
+        <div class="controls" id="station-controls" role="group" aria-label="Streamwise station"></div>
+      </div>
+      <div class="control-group">
+        <p class="control-label">Visible curves</p>
+        <div class="controls" id="curve-controls" role="group" aria-label="Visible curves">
+          <button type="button" data-curve="numerical" aria-pressed="true">Numerical CFD</button>
+          <button type="button" data-curve="analytical" aria-pressed="true">Analytical Blasius</button>
+        </div>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span class="numerical">Numerical CFD</span>
+        <span class="analytical">Analytical Blasius</span>
+      </div>
+      <div class="chart-shell">
+        <div id="profile-chart" aria-live="polite"></div>
+        <div class="chart-tooltip" id="profile-tooltip" role="status" hidden></div>
+      </div>
+      <p class="chart-status" id="profile-status">Loading exported profile data…</p>
+      <p class="source-note">Source: <code>base_similarity_profiles.csv</code>. Axes show dimensionless velocity u / U<sub>e</sub> and similarity coordinate η.</p>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
