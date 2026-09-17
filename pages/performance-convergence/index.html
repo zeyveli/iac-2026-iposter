@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pressure-solver convergence</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .chart-card { position: relative; }
+    .chart { min-height: 22rem; }
+    .axis { stroke: #8a96a8; stroke-width: 1.5; }
+    .gridline { stroke: #e3e7ed; stroke-width: 1; }
+    .series { fill: none; stroke: var(--itu-blue); stroke-width: 4; }
+    .range { stroke: var(--warm); stroke-width: 5; stroke-linecap: round; }
+    .cap { stroke: var(--warm); stroke-width: 3; }
+    .point { fill: var(--itu-blue); stroke: white; stroke-width: 4; cursor: pointer; }
+    .mark:focus { outline: none; }
+    .mark:focus .point, .mark:hover .point { fill: var(--warm); }
+    .tick, .label { fill: var(--muted); font-size: 18px; }
+    .case-label { fill: var(--ink); font-size: 20px; font-weight: 750; }
+    .detail { margin-top: 14px; min-height: 4.5rem; color: var(--ink); }
+    .detail strong { color: var(--itu-blue); }
+    .range-key { --swatch: var(--warm); }
+    .mean-key { --swatch: var(--itu-blue); }
+    @media (max-width: 600px) { .chart { min-height: 17rem; } .tick, .label { font-size: 21px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">GPU performance · convergence</p>
+    <h1>Nearly grid-independent pressure convergence</h1>
+    <p class="lede">Thirty measured timesteps per grid show only a modest change in GMG-preconditioned BiCGSTAB iterations.</p>
+
+    <div class="grid">
+      <section class="card chart-card" aria-labelledby="chart-heading">
+        <h2 id="chart-heading">Iterations across grid size</h2>
+        <div class="legend" aria-hidden="true">
+          <span class="mean-key">Mean iterations</span>
+          <span class="range-key">Observed min–max</span>
+        </div>
+        <svg id="chart" class="chart" viewBox="0 0 900 540" role="img" aria-labelledby="chart-title chart-desc">
+          <title id="chart-title">Mean BiCGSTAB iterations and observed ranges for G1 through G4</title>
+          <desc id="chart-desc">The horizontal node-count axis is logarithmic. Interactive marks expose case, grid, nodes, mean, and range.</desc>
+        </svg>
+        <p id="detail" class="detail" role="status" aria-live="polite">Hover or focus a case to inspect its benchmark values.</p>
+      </section>
+
+      <aside>
+        <div class="callout">
+          <strong>512× more nodes</strong>
+          <p>Mean iterations rise by only <strong>≈27%</strong>, from 6.63 to 8.43.</p>
+        </div>
+        <div class="metric" style="margin-top: 16px">
+          <div><strong>6–10</strong><span>full observed range</span></div>
+          <div><strong>30</strong><span>timesteps per case</span></div>
+        </div>
+        <p class="caption">Node positions use a logarithmic scale. No unpreconditioned curve is shown because the benchmark exports contain only the verified GMG-preconditioned runs.</p>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
