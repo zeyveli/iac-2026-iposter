@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Development index for the IAC 2026 interactive poster iframe pages">
+    <title>IAC 2026 iPoster — development index</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <style>
+      /* The index remains legible if opened before the shared stylesheet is built. */
+      :root { color-scheme: light; font-family: system-ui, sans-serif; }
+      body { margin: 0; background: #f6f9fc; color: #12304a; }
+      main { box-sizing: border-box; width: min(100% - 2rem, 76rem); margin: 0 auto; padding: 2rem 0 3rem; }
+      h1 { margin: 0 0 .4rem; color: #005596; }
+      .masthead { display: flex; align-items: center; gap: 1rem; }
+      .masthead img { width: 72px; height: 72px; object-fit: contain; flex: 0 0 auto; }
+      .lede { max-width: 58rem; line-height: 1.55; }
+      .status { display: inline-block; margin: .5rem 0 1.5rem; padding: .45rem .7rem; border: 1px solid #b8cad8; border-radius: .5rem; background: white; }
+      .routes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .9rem; padding: 0; list-style: none; }
+      .routes a { display: block; height: 100%; box-sizing: border-box; padding: 1rem; border: 1px solid #c7d6e2; border-radius: .6rem; background: white; color: #005596; text-decoration: none; }
+      .routes a:hover, .routes a:focus-visible { border-color: #e26f2b; box-shadow: 0 0 0 .15rem #f8d7c6; }
+      .route-title { display: block; font-weight: 700; margin-bottom: .25rem; }
+      code { font-size: .9em; overflow-wrap: anywhere; }
+      footer { margin-top: 2rem; font-size: .9rem; color: #4c6679; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="./content/iposter-entry-map.md">← iPoster entry map</a></p>
+      <header class="masthead">
+        <img src="./assets/images/itu-seal.png" alt="İstanbul Technical University seal" width="512" height="512">
+        <h1>IAC 2026 Interactive Poster</h1>
+      </header>
+      <p class="lede">Development index for the nine responsive iframe routes. Open each page independently to verify the embedded layout, interaction and scientific copy before assembly.</p>
+      <div class="status" role="status">Responsive mode: <strong id="responsive-mode">detecting…</strong></div>
+
+      <nav aria-label="Interactive poster routes">
+        <ol class="routes">
+          <li><a href="./pages/compact/index.html"><span class="route-title">Compact spatial discretization</span><code>pages/compact/index.html</code></a></li>
+          <li><a href="./pages/projection/index.html"><span class="route-title">Half-staggered projection</span><code>pages/projection/index.html</code></a></li>
+          <li><a href="./pages/batching/index.html"><span class="route-title">Batched GPU tridiagonal solves</span><code>pages/batching/index.html</code></a></li>
+          <li><a href="./pages/multigrid/index.html"><span class="route-title">Matrix-free BiCGSTAB-GMG</span><code>pages/multigrid/index.html</code></a></li>
+          <li><a href="./pages/validation-profiles/index.html"><span class="route-title">Validation: similarity profiles</span><code>pages/validation-profiles/index.html</code></a></li>
+          <li><a href="./pages/validation-integrals/index.html"><span class="route-title">Validation: integral quantities</span><code>pages/validation-integrals/index.html</code></a></li>
+          <li><a href="./pages/performance-convergence/index.html"><span class="route-title">Performance: pressure convergence</span><code>pages/performance-convergence/index.html</code></a></li>
+          <li><a href="./pages/performance-scaling/index.html"><span class="route-title">Performance: timestep scaling</span><code>pages/performance-scaling/index.html</code></a></li>
+          <li><a href="./pages/performance-composition/index.html"><span class="route-title">Performance: timestep composition</span><code>pages/performance-composition/index.html</code></a></li>
+        </ol>
+      </nav>
+
+      <footer>
+        <p>Scientific copy: <a href="./content/collapsed-panels.md">collapsed panels</a> · <a href="./content/expanded-panels.md">expanded panels</a>. External publication requires separate approval.</p>
+      </footer>
+    </main>
+    <script>
+      const target = document.querySelector('#responsive-mode');
+      const updateMode = () => {
+        const fullscreen = Boolean(document.fullscreenElement);
+        const narrow = window.matchMedia('(max-width: 720px)').matches;
+        target.textContent = fullscreen ? 'fullscreen' : (narrow ? 'embedded / narrow' : 'embedded / wide');
+      };
+      updateMode();
+      window.addEventListener('resize', updateMode, { passive: true });
+      document.addEventListener('fullscreenchange', updateMode);
+    </script>
+  </body>
+</html>
