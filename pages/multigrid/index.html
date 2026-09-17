@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Matrix-free BiCGSTAB–GMG</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+      .operator-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(220px, .9fr); gap: clamp(16px, 2vw, 28px); align-items: start; }
+      .operator-copy { background: var(--panel); border-radius: 16px; padding: 16px; min-width: 0; }
+      .operator-copy strong { color: var(--itu-blue); display: block; margin-bottom: 7px; }
+      .svg-panel { fill: #fff; stroke: #d6dce5; stroke-width: 2; }
+      .svg-label { fill: #182239; font: 600 19px Inter, Arial, sans-serif; }
+      .svg-small { fill: #596579; font: 16px Inter, Arial, sans-serif; }
+      .step-key { color: var(--pressure); font-weight: 750; }
+      @media (max-width: 760px) { .operator-layout { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="eyebrow">Method · pressure projection</div>
+      <h1>Matrix-free BiCGSTAB–GMG</h1>
+      <p class="lede">The pressure-correction operator is evaluated as compact gradient then divergence, <span class="step-key">DₕGₕ</span>, rather than stored as a global matrix. BiCGSTAB uses GMG as its geometric preconditioner.</p>
+
+      <section class="card" aria-labelledby="operator-title">
+        <h2 id="operator-title">Follow the matrix-free pressure pathway</h2>
+        <div class="controls" role="group" aria-label="Pressure operator stages">
+          <button type="button" data-stage="0" aria-pressed="true">1 · potential φ</button>
+          <button type="button" data-stage="1" aria-pressed="false">2 · gradient Gₕφ</button>
+          <button type="button" data-stage="2" aria-pressed="false">3 · divergence DₕGₕφ</button>
+        </div>
+        <div class="operator-layout">
+          <div id="operator-graphic"></div>
+          <div class="operator-copy" id="operator-copy" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="gmg-title">
+        <h2 id="gmg-title">GMG preconditioner: geometric hierarchy and W-cycle</h2>
+        <div id="hierarchy-graphic"></div>
+        <div class="grid">
+          <div>
+            <p><strong>Preconditioner:</strong> second-order seven-point Laplacian. Restriction uses full weighting; prolongation is linear. These inexpensive transfers connect successively coarser geometric levels.</p>
+          </div>
+          <div>
+            <p><strong>Smoother:</strong> wall-normal line relaxation. It reuses the same batched-tridiagonal infrastructure developed for compact line solves, now applied on every GMG level.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="callout">The compact <strong>DₕGₕ</strong> operator remains matrix-free inside BiCGSTAB. The seven-point Laplacian is a separate, deliberately low-cost GMG preconditioner—not a replacement for the compact pressure operator.</aside>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
