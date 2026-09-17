@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { validationErrors } from '../assets/js/data.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const C = { blue: '#173b8f', warm: '#a84d1c', ink: '#152642', mute: '#52657d', line: '#d8e1ed', pale: '#eef3fa', cream: '#fbf1e8', white: '#ffffff', teal: '#367e86' };
+const C = { blue: '#173b8f', warm: '#f45c8b', ink: '#152642', mute: '#52657d', line: '#d8e1ed', pale: '#eef3fa', cream: '#f9d0e4', white: '#ffffff', teal: '#367e86' };
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const csv = path => {
   const records = readFileSync(root + path, 'utf8').trim().split(/\r?\n/).filter(line => line.trim() && !line.trim().startsWith('#'));
