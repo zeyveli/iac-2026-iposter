@@ -65,7 +65,7 @@ function render() {
   })));
 
   const hitArea = svgEl("rect", { x: bounds.left, y: bounds.top, width, height, fill: "transparent", tabindex: "0", "aria-label": "Inspect streamwise values" });
-  const marker = svgEl("line", { y1: bounds.top, y2: bounds.top + height, stroke: "#a84d1c", "stroke-width": 2, visibility: "hidden", "pointer-events": "none" });
+  const marker = svgEl("line", { y1: bounds.top, y2: bounds.top + height, stroke: "#f45c8b", "stroke-width": 2, visibility: "hidden", "pointer-events": "none" });
   svg.append(hitArea, marker);
   hitArea.addEventListener("pointermove", event => {
     const rect = svg.getBoundingClientRect();
