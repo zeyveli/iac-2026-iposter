@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Half-staggered pressure projection</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+      .stage-label { color: var(--muted); min-height: 4.8rem; }
+      .equation { margin: 1rem 0; padding: 1rem; border-radius: 14px; background: var(--soft-blue); color: var(--itu-blue); font: 600 clamp(1rem, 3vw, 1.35rem)/1.45 Georgia, serif; overflow-wrap: anywhere; }
+      .grid-line { stroke: #a9b5c5; stroke-width: 2; }
+      .node { fill: #173b8f; }
+      .pressure { fill: #a84d1c; }
+      .face { fill: #1572a1; }
+      .field { stroke: #1572a1; stroke-width: 4; fill: none; stroke-linecap: round; }
+      .pulse { fill: #a84d1c; opacity: .18; }
+      .diagram-label { fill: #182239; font-size: 19px; font-weight: 650; }
+      .diagram-note { fill: #596579; font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <p class="eyebrow">Method · half-staggered projection</p>
+      <h1>Store, predict, project, return</h1>
+      <p class="lede">Velocity components live at nodes while pressure is cell-centred. Divergence and pressure-gradient operations are evaluated at staggered face-normal locations before the corrected velocity is returned to the nodal representation.</p>
+
+      <section class="card" aria-labelledby="grid-title">
+        <h2 id="grid-title">Five-stage timestep</h2>
+        <p>Step through the sequence to see the storage arrangement and the quantities active at each operation.</p>
+        <div id="projection-stage-controls" class="controls" role="group" aria-label="Projection stages">
+          <button type="button" data-stage="1" aria-pressed="true">1 · Store</button>
+          <button type="button" data-stage="2" aria-pressed="false">2 · Predict</button>
+          <button type="button" data-stage="3" aria-pressed="false">3 · Interpolate</button>
+          <button type="button" data-stage="4" aria-pressed="false">4 · Project</button>
+          <button type="button" data-stage="5" aria-pressed="false">5 · Return</button>
+        </div>
+        <div id="projection-grid" aria-live="polite"></div>
+        <p id="stage-description" class="stage-label"></p>
+      </section>
+
+      <section class="card" aria-labelledby="relation-title">
+        <h2 id="relation-title">Incremental pressure correction</h2>
+        <div class="equation" aria-label="Pressure correction Poisson equation">D<sub>h</sub>G<sub>h</sub> φ = (1 / Δt) D<sub>h</sub> <strong>û</strong><sup>*</sup></div>
+        <div class="equation" aria-label="Corrected face velocity equation"><strong>û</strong><sup>n+1</sup> = <strong>û</strong><sup>*</sup> − ΔtG<sub>h</sub>φ</div>
+        <p>The matrix-free compact pressure operator is applied as D<sub>h</sub>G<sub>h</sub>. The face-normal velocity is corrected by the pressure increment; compact interpolation then returns a nodal representation for the following timestep.</p>
+        <p class="callout">The prescribed divergence criterion applies to the corrected staggered face-velocity field. The interpolated nodal field is not assigned that certification.</p>
+      </section>
+    </main>
+
+    <script type="module">
+      import { makeSvg, setPressed, svgEl } from "../../assets/js/common.js";
+
+      const stages = [
+        ["Nodal velocity and cell-centred pressure", "Blue circles mark nodal velocity components. Orange squares mark pressure at the centre of each cell."],
+        ["AB2 momentum predictor", "The Adams–Bashforth predictor advances the nodal velocity to an intermediate state before projection."],
+        ["Compact interpolation to faces", "Repeated sixth-order compact midpoint interpolation supplies face-normal intermediate velocity for staggered operations."],
+        ["Pressure solve and correction", "The pressure increment is obtained from DₕGₕφ = (1 / Δt)Dₕû*. Its gradient corrects the face-normal velocity."],
+        ["Nodal return for the next step", "The corrected face velocity is compactly interpolated back to nodes, providing the velocity representation used at the next timestep."]
+      ];
+      const buttons = [...document.querySelectorAll("#projection-stage-controls button")];
+      const target = document.querySelector("#projection-grid");
+      const description = document.querySelector("#stage-description");
+      let activeStage = 1;
+
+      function drawGrid() {
+        const [title, copy] = stages[activeStage - 1];
+        const svg = makeSvg(target, `${title}: half-staggered projection grid`, "0 0 920 500");
+        const left = 170, top = 105, spacing = 130, columns = 4, rows = 3;
+        for (let row = 0; row < rows; row += 1) {
+          for (let col = 0; col < columns; col += 1) {
+            const x = left + col * spacing, y = top + row * spacing;
+            if (col < columns - 1) svg.append(svgEl("line", { class: "grid-line", x1: x, y1: y, x2: x + spacing, y2: y }));
+            if (row < rows - 1) svg.append(svgEl("line", { class: "grid-line", x1: x, y1: y, x2: x, y2: y + spacing }));
+          }
+        }
+        if (activeStage === 2) {
+          svg.append(svgEl("path", { class: "field", d: "M205 80h58m-18-15 18 15-18 15 M335 210h58m-18-15 18 15-18 15 M465 340h58m-18-15 18 15-18 15" }));
+        }
+        if (activeStage >= 3) {
+          [[235,105], [300,170], [365,235], [430,300], [495,365]].forEach(([cx, cy]) => {
+            svg.append(svgEl("circle", { class: "face", cx, cy, r: 8 }));
+          });
+        }
+        if (activeStage === 4) {
+          [[235,170], [365,170], [235,300], [365,300]].forEach(([cx, cy]) => {
+            svg.append(svgEl("circle", { class: "pulse", cx, cy, r: 44 }));
+          });
+          svg.append(svgEl("path", { class: "field", d: "M235 170h50m-18-15 18 15-18 15 M365 300h50m-18-15 18 15-18 15" }));
+        }
+        if (activeStage === 5) {
+          svg.append(svgEl("path", { class: "field", d: "M195 132 C300 60 400 70 520 125 M195 262 C310 190 410 205 520 255" }));
+        }
+        for (let row = 0; row < rows; row += 1) {
+          for (let col = 0; col < columns; col += 1) {
+            svg.append(svgEl("circle", { class: "node", cx: left + col * spacing, cy: top + row * spacing, r: 8 }));
+            if (col < columns - 1 && row < rows - 1) {
+              svg.append(svgEl("rect", { class: "pressure", x: left + col * spacing + spacing / 2 - 8, y: top + row * spacing + spacing / 2 - 8, width: 16, height: 16, rx: 2 }));
+            }
+          }
+        }
+        svg.append(svgEl("circle", { class: "node", cx: 655, cy: 116, r: 8 }));
+        svg.append(svgEl("text", { class: "diagram-label", x: 678, y: 122 }, "velocity at node"));
+        svg.append(svgEl("rect", { class: "pressure", x: 647, y: 161, width: 16, height: 16, rx: 2 }));
+        svg.append(svgEl("text", { class: "diagram-label", x: 678, y: 176 }, "pressure at cell centre"));
+        svg.append(svgEl("circle", { class: "face", cx: 655, cy: 220, r: 8 }));
+        svg.append(svgEl("text", { class: "diagram-label", x: 678, y: 226 }, "face-normal location"));
+        svg.append(svgEl("text", { class: "diagram-label", x: 170, y: 445 }, `${activeStage}. ${title}`));
+        svg.append(svgEl("text", { class: "diagram-note", x: 170, y: 474 }, "blue: velocity nodes · orange: pressure centres · teal: staggered face-normal values"));
+        description.textContent = copy;
+      }
+
+      buttons.forEach(button => button.addEventListener("click", () => {
+        activeStage = Number(button.dataset.stage);
+        setPressed(buttons, button);
+        drawGrid();
+      }));
+      drawGrid();
+    </script>
+  </body>
+</html>
