@@ -17,7 +17,7 @@ export function describeBatch(direction) {
 
 export const gpuParallelismNote = "GPU parallelism is across independent line systems, not within a single line system. Each compact line is solved directly as one tridiagonal system.";
 
-const dirColor = { x: "#245eb6", y: "#a84d1c", z: "#1572a1" };
+const dirColor = { x: "#245eb6", y: "#f45c8b", z: "#1572a1" };
 
 function drawBatch(container, batch) {
   const svg = makeSvg(container, `Batched ${batch.direction}-direction line systems`, "0 0 900 430");
