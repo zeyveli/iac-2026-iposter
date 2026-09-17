@@ -14,7 +14,7 @@ export const multigridConfig = Object.freeze({
 });
 
 function stageNode(svg, x, stage, active, index) {
-  const fill = active ? "#a84d1c" : "#eaf2fb";
+  const fill = active ? "#f45c8b" : "#eaf2fb";
   const textFill = active ? "#fff" : "#173b8f";
   svg.append(svgEl("rect", { x, y: 160, width: 188, height: 112, rx: 17, fill, stroke: "#173b8f", "stroke-width": active ? 4 : 2 }));
   svg.append(svgEl("text", { x: x + 18, y: 201, fill: textFill, "font-size": 32, "font-weight": 750 }, stage.symbol));
@@ -29,7 +29,7 @@ function drawOperator(container, activeIndex) {
   operatorStages.forEach((stage, index) => {
     stageNode(svg, xs[index], stage, index === activeIndex, index);
     if (index < 2) {
-      const color = index < activeIndex ? "#a84d1c" : "#9aa8b9";
+      const color = index < activeIndex ? "#f45c8b" : "#9aa8b9";
       svg.append(svgEl("path", { d: `M${xs[index] + 194} 216 H${xs[index + 1] - 12}`, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
       svg.append(svgEl("path", { d: `M${xs[index + 1] - 12} 216 l-14 -10 M${xs[index + 1] - 12} 216 l-14 10`, stroke: color, "stroke-width": 7, fill: "none", "stroke-linecap": "round" }));
       svg.append(svgEl("text", { x: xs[index] + 197, y: 190, class: "svg-small" }, index === 0 ? "compact Gₕ" : "compact Dₕ"));
@@ -62,12 +62,12 @@ function drawHierarchy(container) {
   ];
   levels.forEach(level => gridLevel(svg, level.x, level.y, level.cell, level.label));
   const path = "M165 175 C205 175 210 225 260 225 S400 280 450 280 S585 330 630 330 M630 330 C585 330 575 298 450 280 C400 262 382 245 260 225 C210 205 205 175 165 175 M260 225 C300 245 330 275 450 280 C500 290 535 316 630 330";
-  svg.append(svgEl("path", { d: path, fill: "none", stroke: "#a84d1c", "stroke-width": 5, "stroke-linecap": "round" }));
+  svg.append(svgEl("path", { d: path, fill: "none", stroke: "#f45c8b", "stroke-width": 5, "stroke-linecap": "round" }));
   svg.append(svgEl("text", { x: 710, y: 160, class: "svg-small" }, "W-cycle"));
   svg.append(svgEl("text", { x: 710, y: 189, class: "svg-small" }, "revisits coarse"));
   svg.append(svgEl("text", { x: 710, y: 216, class: "svg-small" }, "levels before"));
   svg.append(svgEl("text", { x: 710, y: 243, class: "svg-small" }, "returning fine"));
-  svg.append(svgEl("rect", { x: 52, y: 365, width: 796, height: 42, rx: 12, fill: "#fff1e7" }));
+  svg.append(svgEl("rect", { x: 52, y: 365, width: 796, height: 42, rx: 12, fill: "#f9d0e4" }));
   svg.append(svgEl("text", { x: 72, y: 392, fill: "#182239", "font-size": 16 }, "Second-order seven-point Laplacian preconditioner · batched tridiagonal wall-normal relaxation reused"));
 }
 
