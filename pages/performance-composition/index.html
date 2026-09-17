@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timestep composition</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .chart { min-height: 22rem; }
+    .axis { stroke: #8a96a8; stroke-width: 1.5; }
+    .gridline { stroke: #e3e7ed; stroke-width: 1; }
+    .poisson { fill: var(--pressure); cursor: pointer; }
+    .other { fill: var(--soft-blue); stroke: #b9cce5; cursor: pointer; }
+    .segment:focus { outline: none; opacity: .72; }
+    .segment:hover { opacity: .72; }
+    .tick, .label { fill: var(--muted); font-size: 18px; }
+    .case-label { fill: var(--ink); font-size: 20px; font-weight: 750; }
+    .inside { fill: white; font-size: 18px; font-weight: 800; pointer-events: none; }
+    .detail { min-height: 4.5rem; }
+    .detail strong { color: var(--itu-blue); }
+    .poisson-key { --swatch: var(--pressure); }
+    .other-key { --swatch: #b9cce5; }
+    @media (max-width: 600px) { .chart { min-height: 17rem; } .tick, .label { font-size: 21px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">GPU performance · composition</p>
+    <h1>Pressure remains the dominant timestep cost</h1>
+    <p class="lede">The pressure-Poisson share falls as grids grow, while the aggregate share of all other timestep work rises.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Aggregate execution-time share</h2>
+        <div class="legend" aria-hidden="true">
+          <span class="poisson-key">Pressure-Poisson</span>
+          <span class="other-key">All remaining work</span>
+        </div>
+        <svg id="chart" class="chart" viewBox="0 0 900 540" role="img" aria-labelledby="chart-title chart-desc">
+          <title id="chart-title">Stacked timestep composition for G1 through G4</title>
+          <desc id="chart-desc">Interactive bars compare the pressure-Poisson share with the aggregate of momentum, compact operators, and remaining work.</desc>
+        </svg>
+        <p id="detail" class="detail" role="status" aria-live="polite">Hover or focus a bar segment to inspect its share and median time.</p>
+      </section>
+
+      <aside>
+        <div class="metric">
+          <div><strong>81.5%</strong><span>Poisson · G1</span></div>
+          <div><strong>73.0%</strong><span>Poisson · G4</span></div>
+        </div>
+        <div class="callout" style="margin-top: 16px">
+          <strong>≈56 GiB observed occupancy</strong>
+          <p>The largest sequential benchmark showed this device occupancy. It is <strong>not</strong> an isolated working-set measurement because allocations persisted between cases.</p>
+        </div>
+        <p class="caption">The export measures pressure time directly. Momentum, compact operators, and other activities are therefore presented together as remaining work rather than assigned unverified sub-shares.</p>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
