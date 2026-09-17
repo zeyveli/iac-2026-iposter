@@ -63,7 +63,7 @@ function render() {
   }
 
   const hitArea = svgEl("rect", { x: bounds.left, y: bounds.top, width, height, fill: "transparent", tabindex: "0", "aria-label": "Inspect profile values" });
-  const marker = svgEl("circle", { r: 7, fill: "#a84d1c", stroke: "white", "stroke-width": 3, visibility: "hidden", "pointer-events": "none" });
+  const marker = svgEl("circle", { r: 7, fill: "#f45c8b", stroke: "white", "stroke-width": 3, visibility: "hidden", "pointer-events": "none" });
   svg.append(hitArea, marker);
 
   const inspect = event => {
