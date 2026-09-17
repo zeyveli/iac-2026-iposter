@@ -24,10 +24,10 @@
 
       <section class="card" aria-labelledby="comparison-title">
         <h2 id="comparison-title">Modified wavenumber comparison</h2>
-        <p>For a Fourier mode with nondimensional wavenumber <i>θ</i> = <i>kh</i>, an ideal derivative has <i>k</i><sup>*</sup><i>h</i> = <i>θ</i>. The plotted curves use the exact symbols of the second-, fourth-, sixth-order explicit and sixth-order compact centred first-derivative operators.</p>
+        <p>For a Fourier mode with nondimensional wavenumber <i>ω</i>, an ideal derivative has <i>ω′</i> = <i>ω</i>. The plotted curves use the exact symbols of the second-, fourth-, sixth-order explicit and sixth-order compact centred first-derivative operators.</p>
         <div class="legend" aria-label="Curve legend">
           <span style="--swatch:#1f2937">Exact</span>
-          <span style="--swatch:#cc6ca9">Second-order explicit</span>
+          <span style="--swatch:#8b5a2b">Second-order explicit</span>
           <span style="--swatch:#6487b6">Fourth-order explicit</span>
           <span style="--swatch:#4d9a89">Sixth-order explicit</span>
           <span style="--swatch:#173b8f">Sixth-order compact</span>
@@ -54,7 +54,7 @@
       import { linePath, makeSvg, setPressed, svgEl } from "../../assets/js/common.js";
 
       const palette = {
-        exact: "#1f2937", second: "#cc6ca9", fourth: "#6487b6",
+        exact: "#1f2937", second: "#8b5a2b", fourth: "#6487b6",
         sixth: "#4d9a89", compact: "#173b8f"
       };
       const chart = document.querySelector("#resolution-chart");
@@ -97,8 +97,8 @@
           svg.append(svgEl("text", { class: "tick", x: x(value), y: margin.top + height + 30, "text-anchor": "middle" }, label));
           svg.append(svgEl("text", { class: "tick", x: margin.left - 14, y: y(value) + 6, "text-anchor": "end" }, label));
         });
-        svg.append(svgEl("text", { class: "axis-label", x: margin.left + width / 2, y: 546, "text-anchor": "middle" }, "nondimensional wavenumber, θ = kh"));
-        svg.append(svgEl("text", { class: "axis-label", transform: `translate(27 ${margin.top + height / 2}) rotate(-90)`, "text-anchor": "middle" }, "modified wavenumber, k*h"));
+        svg.append(svgEl("text", { class: "axis-label", x: margin.left + width / 2, y: 546, "text-anchor": "middle" }, "nondimensional wavenumber, ω"));
+        svg.append(svgEl("text", { class: "axis-label", transform: `translate(27 ${margin.top + height / 2}) rotate(-90)`, "text-anchor": "middle" }, "modified wavenumber, ω′"));
 
         Object.entries(modifiedWavenumber).forEach(([name, fn]) => {
           const values = Array.from({ length: 161 }, (_, index) => {
@@ -116,7 +116,7 @@
         const kStar = compactModifiedWavenumber(theta);
         svg.append(svgEl("line", { x1: x(theta), x2: x(theta), y1: y(0), y2: y(kStar), stroke: "#f45c8b", "stroke-width": 3, "stroke-dasharray": "7 6" }));
         svg.append(svgEl("circle", { cx: x(theta), cy: y(kStar), r: 8, fill: "#f45c8b", stroke: "white", "stroke-width": 3 }));
-        svg.append(svgEl("text", { x: x(theta) + 10, y: y(kStar) - 12, fill: "#f45c8b", "font-size": 19, "font-weight": 700 }, `${pointsPerWavelength} points / λ`));
+        svg.append(svgEl("text", { x: x(theta) + 16, y: y(kStar) - 16, fill: "#f45c8b", "font-size": 19, "font-weight": 700, "text-anchor": "start" }, `${pointsPerWavelength} points / λ`));
       }
 
       function update() {
@@ -125,7 +125,7 @@
         const ratio = (compact / theta) * 100;
         output.replaceChildren(
           metric("Points / wavelength", pointsPerWavelength.toString()),
-          metric("kh", theta.toFixed(3)),
+          metric("ω", theta.toFixed(3)),
           metric("Compact amplitude", `${ratio.toFixed(1)}%`)
         );
         drawChart();
