@@ -48,3 +48,18 @@ test("half-staggered projection page has five interactive stages and approved re
   assert.match(html, /\.\.\/\.\.\/assets\/css\/style\.css/);
   assert.match(html, /\.\.\/\.\.\/assets\/js\/common\.js/);
 });
+
+test("half-staggered stages render the requested velocity and pressure states", async () => {
+  const html = await readFile(route("projection"), "utf8");
+
+  assert.match(html, /addVelocityNodes\("uⁿ, vⁿ"\)/u);
+  assert.match(html, /addVelocityNodes\("u\*, v\*"\)/u);
+  assert.match(html, /addFaceNodes\("û\*", "v̂\*"\)/u);
+  assert.match(html, /addFaceNodes\("ûⁿ⁺¹", "v̂ⁿ⁺¹"\)/u);
+  assert.match(html, /addVelocityNodes\("uⁿ⁺¹, vⁿ⁺¹"\)/u);
+  assert.match(html, /addPressureNodes\("pⁿ"\)/u);
+  assert.match(html, /addPressureNodes\("pⁿ⁺¹", true\)/u);
+  assert.match(html, /addInterpolationArcs\(\)/);
+  assert.match(html, /horizontalFaces\.length\s*\+\s*verticalFaces\.length/);
+  assert.doesNotMatch(html, /orange/i);
+});
