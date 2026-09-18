@@ -137,15 +137,32 @@ function drawBatch(container, batch) {
   });
 }
 
+export function memoryAccessModel(direction) {
+  if (!Object.hasOwn(grid, direction)) throw new Error(`Unknown grid direction: ${direction}`);
+  const axes = ["x", "y", "z"].filter(axis => axis !== direction);
+  const [fastAxis, slowAxis] = axes;
+  const cells = Array.from({ length: 12 }, (_, index) => {
+    const fastCoordinate = index % grid[fastAxis];
+    const slowCoordinate = Math.floor(index / grid[fastAxis]) % grid[slowAxis];
+    return {
+      index,
+      label: `${fastAxis}${fastCoordinate}${slowAxis}${slowCoordinate}`,
+      highlighted: index < 4
+    };
+  });
+  return { axes, cells };
+}
+
 function drawMemory(container, batch) {
   const svg = makeSvg(container, `Coalesced ${batch.direction}-direction memory access`, "0 0 560 160");
   const color = dirColor[batch.direction];
-  svg.append(svgEl("text", { x: 12, y: 28, class: "svg-small" }, `Thread group reads adjacent ${batch.direction}-pass entries`));
-  for (let i = 0; i < 12; i++) {
-    const x = 14 + i * 43;
-    svg.append(svgEl("rect", { x, y: 52, width: 34, height: 34, rx: 6, fill: i % 3 === 0 ? color : "#eaf2fb" }));
-    svg.append(svgEl("text", { x: x + 9, y: 75, fill: i % 3 === 0 ? "#fff" : "#173b8f", "font-size": 14 }, String(i)));
-  }
+  const model = memoryAccessModel(batch.direction);
+  svg.append(svgEl("text", { x: 12, y: 28, class: "svg-small" }, `Adjacent ${model.axes.join("–")} systems in the ${batch.direction}-pass batch`));
+  model.cells.forEach(cell => {
+    const x = 14 + cell.index * 43;
+    svg.append(svgEl("rect", { x, y: 52, width: 34, height: 34, rx: 6, fill: cell.highlighted ? color : "#eaf2fb" }));
+    svg.append(svgEl("text", { x: x + 4, y: 73, fill: cell.highlighted ? "#fff" : "#173b8f", "font-size": 10 }, cell.label));
+  });
   svg.append(svgEl("path", { d: "M32 115 H500", stroke: color, "stroke-width": 4, "stroke-linecap": "round" }));
   svg.append(svgEl("path", { d: "M500 115 l-12 -8 M500 115 l-12 8", stroke: color, "stroke-width": 4, fill: "none", "stroke-linecap": "round" }));
   svg.append(svgEl("text", { x: 14, y: 148, class: "svg-small" }, "contiguous addresses for a coalesced warp transaction"));
