@@ -53,6 +53,28 @@ test("batch diagram splits its panel notes into short contained lines", () => {
   }
 });
 
+test("batch iframe projects its node field through three depth planes", () => {
+  assert.equal(typeof batching.batchLatticeGeometry, "function");
+
+  const expectedVectors = {
+    x: { dx: 210, dy: 0 },
+    y: { dx: 0, dy: -152 },
+    z: { dx: 70, dy: -40 }
+  };
+
+  for (const direction of ["x", "y", "z"]) {
+    const geometry = batching.batchLatticeGeometry(direction);
+    assert.equal(geometry.nodes.length, 90);
+    assert.deepEqual([...new Set(geometry.nodes.map(node => node.depth))], [0, 1, 2]);
+    assert.equal(geometry.lines.length, 4);
+    assert.ok(geometry.lines.every(line => line.direction === direction));
+    assert.deepEqual(
+      { dx: geometry.lines[0].x2 - geometry.lines[0].x1, dy: geometry.lines[0].y2 - geometry.lines[0].y1 },
+      expectedVectors[direction]
+    );
+  }
+});
+
 test("matrix-free pathway carries phi through gradient and divergence without a global matrix", () => {
   assert.deepEqual(operatorStages.map(stage => stage.symbol), ["φ", "Gₕφ", "DₕGₕφ"]);
   assert.match(operatorStages.at(-1).detail, /without assembling a global matrix/i);
