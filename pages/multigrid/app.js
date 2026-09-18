@@ -13,6 +13,49 @@ export const multigridConfig = Object.freeze({
   reuse: "batched tridiagonal line-solve infrastructure reused on every level"
 });
 
+export const operatorDiagramCopy = Object.freeze({
+  subtitle: Object.freeze([
+    "BiCGSTAB requests the operator action.",
+    "No global sparse matrix is assembled."
+  ]),
+  footer: Object.freeze([
+    "The final field supplies the",
+    "pressure-correction residual used by",
+    "the Krylov iteration."
+  ])
+});
+
+export function multigridDiagramModel() {
+  return {
+    levels: [
+      { name: "Fine", spacing: "h" },
+      { name: "Level 2", spacing: "2h" },
+      { name: "Level 3", spacing: "4h" },
+      { name: "Coarse", spacing: "8h" }
+    ],
+    visits: [0, 1, 2, 3, 2, 3, 2, 1, 2, 3, 2, 3, 2, 1, 0],
+    subtitle: [
+      "Four geometric levels · recursive W traversal",
+      "Restriction ↓ · prolongation ↑",
+      "Line relaxation on every level"
+    ],
+    explanation: [
+      "Each level calls its coarse correction twice.",
+      "The W pattern recurses at intermediate levels."
+    ],
+    badges: [
+      "7-point Laplacian preconditioner",
+      "Wall-normal line relaxation"
+    ]
+  };
+}
+
+function textLines(svg, lines, x, y, lineHeight, attrs = {}) {
+  lines.forEach((line, index) => {
+    svg.append(svgEl("text", { x, y: y + index * lineHeight, ...attrs }, line));
+  });
+}
+
 function stageNode(svg, x, stage, active, index) {
   const fill = active ? "#f45c8b" : "#eaf2fb";
   const textFill = active ? "#fff" : "#173b8f";
@@ -24,7 +67,7 @@ function stageNode(svg, x, stage, active, index) {
 function drawOperator(container, activeIndex) {
   const svg = makeSvg(container, "Interactive matrix-free pressure operator pathway", "0 0 720 390");
   svg.append(svgEl("text", { x: 24, y: 45, class: "svg-label" }, "Compact pressure operator applied on demand"));
-  svg.append(svgEl("text", { x: 24, y: 75, class: "svg-small" }, "BiCGSTAB requests the action; no global sparse matrix is assembled."));
+  textLines(svg, operatorDiagramCopy.subtitle, 24, 73, 24, { class: "svg-small" });
   const xs = [34, 266, 498];
   operatorStages.forEach((stage, index) => {
     stageNode(svg, xs[index], stage, index === activeIndex, index);
@@ -36,39 +79,90 @@ function drawOperator(container, activeIndex) {
     }
   });
   const prompt = activeIndex === 0 ? "select a stage" : "operator action continues";
-  svg.append(svgEl("text", { x: 24, y: 338, class: "svg-small" }, prompt));
-  svg.append(svgEl("text", { x: 24, y: 366, class: "svg-small" }, "The final field drives the pressure-correction residual in the Krylov iteration."));
+  svg.append(svgEl("text", { x: 24, y: 323, class: "svg-small" }, prompt));
+  textLines(svg, operatorDiagramCopy.footer, 24, 342, 21, { class: "svg-small" });
 }
 
-function gridLevel(svg, x, y, cell, label) {
-  const n = 4;
-  svg.append(svgEl("text", { x, y: y - 12, class: "svg-small" }, label));
-  for (let row = 0; row < n; row++) {
-    for (let col = 0; col < n; col++) {
-      svg.append(svgEl("rect", { x: x + col * cell, y: y + row * cell, width: cell - 2, height: cell - 2, fill: (row + col) % 2 ? "#eaf2fb" : "#fff", stroke: "#245eb6", "stroke-width": 1 }));
-    }
-  }
+function addArrowMarker(svg) {
+  const defs = svgEl("defs");
+  const marker = svgEl("marker", {
+    id: "w-cycle-arrow",
+    viewBox: "0 0 10 10",
+    refX: 8,
+    refY: 5,
+    markerWidth: 6,
+    markerHeight: 6,
+    orient: "auto-start-reverse"
+  });
+  marker.append(svgEl("path", { d: "M0 0 L10 5 L0 10 z", fill: "#f45c8b" }));
+  defs.append(marker);
+  svg.append(defs);
+}
+
+function levelBadge(svg, level, y) {
+  svg.append(svgEl("rect", { x: 22, y: y - 22, width: 116, height: 42, rx: 12, fill: level.name === "Coarse" ? "#f9d0e4" : "#eaf2fb" }));
+  svg.append(svgEl("text", { x: 36, y: y + 5, fill: "#173b8f", "font-size": 15, "font-weight": 700 }, level.name));
+  svg.append(svgEl("text", { x: 118, y: y + 5, fill: "#596579", "font-size": 13, "text-anchor": "end" }, level.spacing));
 }
 
 function drawHierarchy(container) {
-  const svg = makeSvg(container, "Four-level geometric multigrid W-cycle", "0 0 900 430");
+  const model = multigridDiagramModel();
+  const svg = makeSvg(container, "Four-level geometric multigrid W-cycle", "0 0 900 500");
+  addArrowMarker(svg);
   svg.append(svgEl("text", { x: 22, y: 38, class: "svg-label" }, "Geometric coarsening with a W-cycle"));
-  svg.append(svgEl("text", { x: 22, y: 67, class: "svg-small" }, "full weighting ↓ · linear prolongation ↑ · wall-normal line relaxation at each level"));
-  const levels = [
-    { x: 55, y: 125, cell: 27, label: "fine grid" },
-    { x: 260, y: 175, cell: 20, label: "level 2" },
-    { x: 450, y: 230, cell: 14, label: "level 3" },
-    { x: 630, y: 280, cell: 10, label: "coarse solve" }
+  textLines(svg, model.subtitle, 22, 67, 22, { class: "svg-small" });
+
+  const rowY = [170, 230, 290, 350];
+  model.levels.forEach((level, index) => {
+    levelBadge(svg, level, rowY[index]);
+    svg.append(svgEl("path", {
+      d: `M152 ${rowY[index]} H872`,
+      fill: "none",
+      stroke: "#d6dce5",
+      "stroke-width": 2,
+      "stroke-dasharray": "7 8"
+    }));
+  });
+
+  svg.append(svgEl("text", { x: 154, y: 139, fill: "#245eb6", "font-size": 14, "font-weight": 700 }, "RESTRICT + PRE-SMOOTH ↓"));
+  svg.append(svgEl("text", { x: 681, y: 139, fill: "#245eb6", "font-size": 14, "font-weight": 700 }, "↑ PROLONG + POST-SMOOTH"));
+
+  const xStart = 166;
+  const xStep = 49;
+  const points = model.visits.map((level, index) => ({ x: xStart + index * xStep, y: rowY[level], level }));
+  points.slice(1).forEach((point, index) => {
+    const previous = points[index];
+    svg.append(svgEl("path", {
+      d: `M${previous.x} ${previous.y} L${point.x} ${point.y}`,
+      fill: "none",
+      stroke: "#f45c8b",
+      "stroke-width": 5,
+      "stroke-linecap": "round",
+      "marker-end": "url(#w-cycle-arrow)"
+    }));
+  });
+
+  let coarseVisit = 0;
+  points.forEach(point => {
+    if (point.level === 3) {
+      coarseVisit += 1;
+      svg.append(svgEl("circle", { cx: point.x, cy: point.y, r: 15, fill: "#f45c8b", stroke: "#fff", "stroke-width": 3 }));
+      svg.append(svgEl("text", { x: point.x, y: point.y + 5, fill: "#fff", "font-size": 13, "font-weight": 800, "text-anchor": "middle" }, String(coarseVisit)));
+    } else {
+      svg.append(svgEl("circle", { cx: point.x, cy: point.y, r: 6, fill: "#245eb6", stroke: "#fff", "stroke-width": 2 }));
+    }
+  });
+
+  textLines(svg, model.explanation, 450, 395, 21, { fill: "#596579", "font-size": 15, "text-anchor": "middle" });
+
+  const badgeLayout = [
+    { x: 52, width: 380, text: model.badges[0] },
+    { x: 448, width: 400, text: model.badges[1] }
   ];
-  levels.forEach(level => gridLevel(svg, level.x, level.y, level.cell, level.label));
-  const path = "M165 175 C205 175 210 225 260 225 S400 280 450 280 S585 330 630 330 M630 330 C585 330 575 298 450 280 C400 262 382 245 260 225 C210 205 205 175 165 175 M260 225 C300 245 330 275 450 280 C500 290 535 316 630 330";
-  svg.append(svgEl("path", { d: path, fill: "none", stroke: "#f45c8b", "stroke-width": 5, "stroke-linecap": "round" }));
-  svg.append(svgEl("text", { x: 710, y: 160, class: "svg-small" }, "W-cycle"));
-  svg.append(svgEl("text", { x: 710, y: 189, class: "svg-small" }, "revisits coarse"));
-  svg.append(svgEl("text", { x: 710, y: 216, class: "svg-small" }, "levels before"));
-  svg.append(svgEl("text", { x: 710, y: 243, class: "svg-small" }, "returning fine"));
-  svg.append(svgEl("rect", { x: 52, y: 365, width: 796, height: 42, rx: 12, fill: "#f9d0e4" }));
-  svg.append(svgEl("text", { x: 72, y: 392, fill: "#182239", "font-size": 16 }, "Second-order seven-point Laplacian preconditioner · batched tridiagonal wall-normal relaxation reused"));
+  badgeLayout.forEach(badge => {
+    svg.append(svgEl("rect", { x: badge.x, y: 444, width: badge.width, height: 38, rx: 12, fill: "#f9d0e4" }));
+    svg.append(svgEl("text", { x: badge.x + badge.width / 2, y: 469, fill: "#182239", "font-size": 15, "font-weight": 650, "text-anchor": "middle" }, badge.text));
+  });
 }
 
 function renderStage(index) {
