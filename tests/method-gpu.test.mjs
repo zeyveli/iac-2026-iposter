@@ -57,22 +57,31 @@ test("batch iframe projects its node field through three depth planes", () => {
   assert.equal(typeof batching.batchLatticeGeometry, "function");
 
   const expectedVectors = {
-    x: { dx: 210, dy: 0 },
+    x: { dx: 420, dy: 0 },
     y: { dx: 0, dy: -152 },
-    z: { dx: 70, dy: -40 }
+    z: { dx: 110, dy: -52 }
   };
+  const expectedLineCounts = { x: 5, y: 6, z: 6 };
 
   for (const direction of ["x", "y", "z"]) {
     const geometry = batching.batchLatticeGeometry(direction);
     assert.equal(geometry.nodes.length, 90);
     assert.deepEqual([...new Set(geometry.nodes.map(node => node.depth))], [0, 1, 2]);
-    assert.equal(geometry.lines.length, 4);
+    assert.equal(geometry.lines.length, expectedLineCounts[direction]);
     assert.ok(geometry.lines.every(line => line.direction === direction));
     assert.deepEqual(
       { dx: geometry.lines[0].x2 - geometry.lines[0].x1, dy: geometry.lines[0].y2 - geometry.lines[0].y1 },
       expectedVectors[direction]
     );
   }
+});
+
+test("batch iframe gives the 3D lattice one wide panel without line-card thumbnails", () => {
+  assert.equal(typeof batching.batchDiagramModel, "function");
+  const model = batching.batchDiagramModel(describeBatch("x"));
+  assert.equal(model.panels.length, 1);
+  assert.ok(model.panels[0].width >= 880);
+  assert.deepEqual(model.cards, []);
 });
 
 test("matrix-free pathway carries phi through gradient and divergence without a global matrix", () => {
