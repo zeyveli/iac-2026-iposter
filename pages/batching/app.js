@@ -17,6 +17,21 @@ export function describeBatch(direction) {
 
 export const gpuParallelismNote = "GPU parallelism is across independent line systems, not within a single line system. Each compact line is solved directly as one tridiagonal system.";
 
+export function batchPanelNotes(batch) {
+  return {
+    grid: [
+      "One highlighted stroke = one",
+      `length-${batch.lineLength} tridiagonal solve`,
+      "Transverse coordinates identify each system."
+    ],
+    gpu: [
+      `${batch.systems.toLocaleString()} direct line solves`,
+      "in one batched launch",
+      "Shared factorization · independent RHS"
+    ]
+  };
+}
+
 const dirColor = { x: "#245eb6", y: "#f45c8b", z: "#1572a1" };
 
 function drawBatch(container, batch) {
@@ -41,8 +56,10 @@ function drawBatch(container, batch) {
     if (batch.direction === "y") svg.append(svgEl("line", { x1: gx + 16 + k * 78, y1: gy, x2: gx + 16 + k * 78, y2: gy + (rows - 1) * dy, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
     if (batch.direction === "z") svg.append(svgEl("line", { x1: gx + 22, y1: gy + 12 + offset, x2: gx + 255, y2: gy + 55 + offset, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
   }
-  svg.append(svgEl("text", { x: 34, y: 350, class: "svg-small" }, `One highlighted stroke = one length-${batch.lineLength} tridiagonal solve`));
-  svg.append(svgEl("text", { x: 34, y: 377, class: "svg-small" }, "The other cross-section coordinates label independent systems."));
+  const notes = batchPanelNotes(batch);
+  notes.grid.forEach((line, index) => {
+    svg.append(svgEl("text", { x: 34, y: 342 + index * 23, class: "svg-small" }, line));
+  });
 
   const cardPositions = [[490, 100], [634, 100], [778, 100], [490, 225], [634, 225], [778, 225]];
   cardPositions.forEach(([x, y], index) => {
@@ -50,8 +67,9 @@ function drawBatch(container, batch) {
     for (let n = 0; n < 6; n++) svg.append(svgEl("circle", { cx: x + 18 + n * 14, cy: y + 37, r: 5, fill: color }));
     svg.append(svgEl("text", { x: x + 14, y: y + 68, class: "svg-small" }, `line ${index + 1}`));
   });
-  svg.append(svgEl("text", { x: 478, y: 345, class: "svg-small" }, `… ${batch.systems.toLocaleString()} direct line solves in one batched launch`));
-  svg.append(svgEl("text", { x: 478, y: 377, class: "svg-small" }, "shared factorization · independent right-hand sides"));
+  notes.gpu.forEach((line, index) => {
+    svg.append(svgEl("text", { x: 478, y: 342 + index * 23, class: "svg-small" }, index === 0 ? `… ${line}` : line));
+  });
 }
 
 function drawMemory(container, batch) {
