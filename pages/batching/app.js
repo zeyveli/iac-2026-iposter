@@ -34,7 +34,7 @@ export function batchLatticeGeometry(direction) {
   if (!Object.hasOwn(grid, direction)) throw new Error(`Unknown grid direction: ${direction}`);
 
   const dimensions = { x: 6, y: 5, z: 3 };
-  const origin = { x: 170, y: 300 };
+  const origin = { x: 170, y: 292 };
   const basis = {
     x: { x: 84, y: 0 },
     y: { x: 0, y: -38 },
