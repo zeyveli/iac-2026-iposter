@@ -184,12 +184,35 @@ function iterations(x, y, w, h, options = {}) {
 
 {
   let body = title(48, 97, 'Many grid lines. One GPU batch.', 35);
-  const gx = 100, gy = 163;
-  for (let j = 0; j < 5; j++) {
-    body += line(gx, gy + j * 43, gx + 405, gy + j * 43, j === 2 ? C.warm : C.blue, j === 2 ? 5 : 3);
-    for (let i = 0; i < 10; i++) body += circle(gx + i * 45, gy + j * 43, 5, j === 2 ? C.warm : C.blue);
+  const gx = 95, gy = 168, columns = 7, rows = 4, depths = 3;
+  const dx = 54, dy = 43, depthX = 32, depthY = -19;
+  const projected = (column, row, depth) => [gx + column * dx + depth * depthX, gy + row * dy + depth * depthY];
+  for (const [column, row] of [[0, 0], [columns - 1, 0], [0, rows - 1], [columns - 1, rows - 1]]) {
+    const [x1, y1] = projected(column, row, 0);
+    const [x2, y2] = projected(column, row, depths - 1);
+    body += line(x1, y1, x2, y2, C.line, 2, 'class="depth-connector"');
   }
-  body += text(100, 388, 'Independent compact grid lines', 24, C.ink, 700);
+  for (let depth = depths - 1; depth >= 0; depth--) {
+    for (let row = 0; row < rows; row++) {
+      const highlighted = depth === 1 && row === 2;
+      const [x1, y1] = projected(0, row, depth);
+      const [x2, y2] = projected(columns - 1, row, depth);
+      body += line(x1, y1, x2, y2, highlighted ? C.warm : C.blue, highlighted ? 5 : 3, `class="compact-line" opacity="${highlighted ? 1 : 0.72 + depth * 0.12}"`);
+    }
+    body += `<g data-depth-plane="${depth}">`;
+    for (let row = 0; row < rows; row++) {
+      for (let column = 0; column < columns; column++) {
+        const highlighted = depth === 1 && row === 2;
+        const [x, y] = projected(column, row, depth);
+        body += circle(x, y, highlighted ? 5.5 : 4.5, highlighted ? C.warm : C.blue, `class="lattice-node" opacity="${highlighted ? 1 : 0.72 + depth * 0.12}"`);
+      }
+    }
+    body += '</g>';
+  }
+  body += line(103, 334, 149, 334, C.blue, 3, 'marker-end="url(#arrow)"') + text(158, 341, 'x', 19, C.blue, 700);
+  body += line(103, 334, 103, 299, C.blue, 3, 'marker-end="url(#arrow)"') + text(92, 296, 'y', 19, C.blue, 700);
+  body += line(103, 334, 132, 316, C.blue, 3, 'marker-end="url(#arrow)"') + text(139, 315, 'z', 19, C.blue, 700);
+  body += text(100, 388, '3D grid · independent compact lines', 24, C.ink, 700);
   body += line(554, 255, 647, 255, C.blue, 4, 'marker-end="url(#arrow)"');
   body += rect(696, 141, 377, 242, C.pale) + text(725, 180, 'BATCHED LINE SOLVES', 21, C.blue, 700);
   for (let i = 0; i < 5; i++) {
@@ -199,7 +222,7 @@ function iterations(x, y, w, h, options = {}) {
   body += lines(1137, 169, ['REUSE', 'Shared left-hand-side', 'factorization'], 24, C.ink, 400, 32);
   body += lines(1137, 287, ['COALESCE', 'Memory access without', 'a main-path transpose'], 24, C.ink, 400, 32);
   body += footer(1600, 500, 'GPU parallelism spans independent systems; each compact grid-line solve remains direct. Schematic, not a benchmark.');
-  save('slider/03-batched-lines.svg', 1600, 500, 'Batched GPU compact line systems', 'Illustrative independent grid lines map to GPU-batched tridiagonal solves. A common uniform-grid left-hand-side factorization is reused. Coalesced memory layout avoids an explicit transpose on the main execution path. Line counts in this schematic are illustrative, not problem dimensions.', body);
+  save('slider/03-batched-lines.svg', 1600, 500, 'Batched GPU compact line systems', 'A perspective three-dimensional lattice shows independent compact grid lines mapped to GPU-batched tridiagonal solves. A common uniform-grid left-hand-side factorization is reused. Coalesced memory layout avoids an explicit transpose on the main execution path. Line counts in this schematic are illustrative, not problem dimensions.', body);
 }
 
 {
