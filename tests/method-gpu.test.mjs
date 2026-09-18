@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import * as batching from "../pages/batching/app.js";
-import { operatorStages, multigridConfig } from "../pages/multigrid/app.js";
+import {
+  multigridConfig,
+  multigridDiagramModel,
+  operatorDiagramCopy,
+  operatorStages
+} from "../pages/multigrid/app.js";
 
 const { describeBatch, gpuParallelismNote } = batching;
 
@@ -107,4 +112,27 @@ test("GMG configuration preserves the seven-point preconditioner and line-solve 
   assert.equal(multigridConfig.cycle, "W-cycle");
   assert.equal(multigridConfig.smoother, "wall-normal line relaxation");
   assert.match(multigridConfig.reuse, /batched tridiagonal/i);
+});
+
+test("W-cycle diagram shows the recursive visit order from fine grid and back", () => {
+  const model = multigridDiagramModel();
+
+  assert.deepEqual(model.levels.map(level => level.name), ["Fine", "Level 2", "Level 3", "Coarse"]);
+  assert.deepEqual(model.visits, [0, 1, 2, 3, 2, 3, 2, 1, 2, 3, 2, 3, 2, 1, 0]);
+  assert.equal(model.visits.filter(level => level === 3).length, 4);
+  assert.ok(model.visits.slice(1).every((level, index) => Math.abs(level - model.visits[index]) === 1));
+});
+
+test("multigrid SVG copy is split into short lines for embedded poster widths", () => {
+  const model = multigridDiagramModel();
+  const lines = [
+    ...operatorDiagramCopy.subtitle,
+    ...operatorDiagramCopy.footer,
+    ...model.subtitle,
+    ...model.explanation,
+    ...model.badges
+  ];
+
+  assert.ok(lines.length >= 8);
+  assert.ok(lines.every(line => line.length <= 46), `diagram line exceeds the embedded-width limit: ${lines.find(line => line.length > 46)}`);
 });
