@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -60,4 +61,16 @@ test('iframe theme and generated graphics use the manuscript pink accent consist
     const svg = readFileSync(root + name, 'utf8').toLowerCase();
     assert.doesNotMatch(svg, /#(?:fff1e7|fbf1e8)/, `${name} must not retain a pale orange background`);
   }
+});
+
+test('batched-lines export projects nodes across three depth planes', () => {
+  execFileSync(process.execPath, [root + 'scripts/generate-assets.mjs'], { cwd: root });
+  const svg = readFileSync(root + 'slider/03-batched-lines.svg', 'utf8');
+
+  for (const depth of ['0', '1', '2']) {
+    assert.match(svg, new RegExp(`data-depth-plane="${depth}"`));
+  }
+  assert.ok((svg.match(/class="lattice-node"/g) ?? []).length >= 60);
+  assert.ok((svg.match(/class="compact-line"/g) ?? []).length >= 9);
+  assert.match(svg, /class="depth-connector"/);
 });
