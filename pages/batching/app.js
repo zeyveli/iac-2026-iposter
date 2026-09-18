@@ -20,7 +20,7 @@ export const gpuParallelismNote = "GPU parallelism is across independent line sy
 export function batchPanelNotes(batch) {
   return {
     grid: [
-      "One highlighted stroke = one",
+      "One highlighted stroke = one"
       `length-${batch.lineLength} tridiagonal solve`,
       "Transverse coordinates identify each system."
     ],
