@@ -25,6 +25,11 @@ export const operatorDiagramCopy = Object.freeze({
   ])
 });
 
+export const operatorConnectorLabels = Object.freeze([
+  Object.freeze({ text: "compact Gₕ", x: 244, y: 140, fontSize: 14, textAnchor: "middle" }),
+  Object.freeze({ text: "compact Dₕ", x: 476, y: 140, fontSize: 14, textAnchor: "middle" })
+]);
+
 export function multigridDiagramModel() {
   return {
     levels: [
@@ -75,8 +80,16 @@ function drawOperator(container, activeIndex) {
       const color = index < activeIndex ? "#f45c8b" : "#9aa8b9";
       svg.append(svgEl("path", { d: `M${xs[index] + 194} 216 H${xs[index + 1] - 12}`, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
       svg.append(svgEl("path", { d: `M${xs[index + 1] - 12} 216 l-14 -10 M${xs[index + 1] - 12} 216 l-14 10`, stroke: color, "stroke-width": 7, fill: "none", "stroke-linecap": "round" }));
-      svg.append(svgEl("text", { x: xs[index] + 197, y: 190, class: "svg-small" }, index === 0 ? "compact Gₕ" : "compact Dₕ"));
     }
+  });
+  operatorConnectorLabels.forEach(label => {
+    svg.append(svgEl("text", {
+      x: label.x,
+      y: label.y,
+      class: "svg-small",
+      "font-size": label.fontSize,
+      "text-anchor": label.textAnchor
+    }, label.text));
   });
   const prompt = activeIndex === 0 ? "select a stage" : "operator action continues";
   svg.append(svgEl("text", { x: 24, y: 323, class: "svg-small" }, prompt));
