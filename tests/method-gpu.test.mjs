@@ -83,6 +83,20 @@ test("batch iframe gives the 3D lattice one wide panel without line-card thumbna
   assert.deepEqual(model.cards, []);
 });
 
+test("memory access highlights adjacent systems and relabels transverse coordinates by direction", () => {
+  const expectedLabels = {
+    x: ["y0z0", "y1z0", "y2z0", "y3z0"],
+    y: ["x0z0", "x1z0", "x2z0", "x3z0"],
+    z: ["x0y0", "x1y0", "x2y0", "x3y0"]
+  };
+
+  for (const direction of ["x", "y", "z"]) {
+    const model = batching.memoryAccessModel(direction);
+    assert.deepEqual(model.cells.filter(cell => cell.highlighted).map(cell => cell.index), [0, 1, 2, 3]);
+    assert.deepEqual(model.cells.slice(0, 4).map(cell => cell.label), expectedLabels[direction]);
+  }
+});
+
 test("matrix-free pathway carries phi through gradient and divergence without a global matrix", () => {
   assert.deepEqual(operatorStages.map(stage => stage.symbol), ["φ", "Gₕφ", "DₕGₕφ"]);
   assert.match(operatorStages.at(-1).detail, /without assembling a global matrix/i);
