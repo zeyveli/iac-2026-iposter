@@ -1,6 +1,6 @@
 import { makeSvg, setPressed, svgEl } from "../../assets/js/common.js";
 
-const grid = Object.freeze({ x: 16, y: 12, z: 8 });
+const grid = Object.freeze({ x: 6, y: 5, z: 3 });
 
 export function describeBatch(direction) {
   if (!Object.hasOwn(grid, direction)) throw new Error(`Unknown grid direction: ${direction}`);
