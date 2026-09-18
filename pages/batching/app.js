@@ -32,6 +32,52 @@ export function batchPanelNotes(batch) {
   };
 }
 
+export function batchLatticeGeometry(direction) {
+  if (!Object.hasOwn(grid, direction)) throw new Error(`Unknown grid direction: ${direction}`);
+
+  const dimensions = { x: 6, y: 5, z: 3 };
+  const origin = { x: 72, y: 292 };
+  const basis = {
+    x: { x: 42, y: 0 },
+    y: { x: 0, y: -38 },
+    z: { x: 35, y: -20 }
+  };
+  const point = (x, y, z) => ({
+    x: origin.x + x * basis.x.x + y * basis.y.x + z * basis.z.x,
+    y: origin.y + x * basis.x.y + y * basis.y.y + z * basis.z.y
+  });
+
+  const nodes = [];
+  for (let depth = 0; depth < dimensions.z; depth++) {
+    for (let y = 0; y < dimensions.y; y++) {
+      for (let x = 0; x < dimensions.x; x++) nodes.push({ ...point(x, y, depth), depth });
+    }
+  }
+
+  const lineAnchors = {
+    x: [0, 1, 2, 3].map(y => ({ start: [0, y, 1], end: [dimensions.x - 1, y, 1] })),
+    y: [0, 2, 4, 5].map(x => ({ start: [x, 0, 1], end: [x, dimensions.y - 1, 1] })),
+    z: [1, 2, 3, 4].map(x => ({ start: [x, 2, 0], end: [x, 2, dimensions.z - 1] }))
+  };
+  const lines = lineAnchors[direction].map(({ start, end }) => {
+    const a = point(...start);
+    const b = point(...end);
+    return { direction, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  });
+
+  const planes = Array.from({ length: dimensions.z }, (_, depth) => {
+    const corners = [
+      point(0, 0, depth),
+      point(dimensions.x - 1, 0, depth),
+      point(dimensions.x - 1, dimensions.y - 1, depth),
+      point(0, dimensions.y - 1, depth)
+    ];
+    return { depth, points: corners.map(({ x, y }) => `${x},${y}`).join(" ") };
+  });
+
+  return { nodes, lines, planes };
+}
+
 const dirColor = { x: "#245eb6", y: "#f45c8b", z: "#1572a1" };
 
 function drawBatch(container, batch) {
@@ -44,18 +90,40 @@ function drawBatch(container, batch) {
   const color = dirColor[batch.direction];
   const axes = batch.varyingAxes.join("–");
   svg.append(svgEl("text", { x: 34, y: 80, class: "svg-small" }, `${batch.systems.toLocaleString()} lines span the ${axes} cross-section`));
-  const gx = 60, gy = 115, cols = 11, rows = 8, dx = 29, dy = 25;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      svg.append(svgEl("circle", { cx: gx + c * dx, cy: gy + r * dy, r: 4, fill: "#b9c6d7" }));
-    }
-  }
-  for (let k = 0; k < 4; k++) {
-    const offset = k * 48;
-    if (batch.direction === "x") svg.append(svgEl("line", { x1: gx, y1: gy + 13 + offset, x2: gx + (cols - 1) * dx, y2: gy + 13 + offset, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
-    if (batch.direction === "y") svg.append(svgEl("line", { x1: gx + 16 + k * 78, y1: gy, x2: gx + 16 + k * 78, y2: gy + (rows - 1) * dy, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
-    if (batch.direction === "z") svg.append(svgEl("line", { x1: gx + 22, y1: gy + 12 + offset, x2: gx + 255, y2: gy + 55 + offset, stroke: color, "stroke-width": 7, "stroke-linecap": "round" }));
-  }
+  const lattice = batchLatticeGeometry(batch.direction);
+  lattice.planes.forEach(plane => {
+    svg.append(svgEl("polygon", {
+      points: plane.points,
+      fill: "none",
+      stroke: "#dfe5ed",
+      "stroke-width": 1.5,
+      "stroke-linejoin": "round",
+      "data-depth-plane": plane.depth
+    }));
+  });
+  lattice.lines.forEach(line => {
+    svg.append(svgEl("line", {
+      x1: line.x1,
+      y1: line.y1,
+      x2: line.x2,
+      y2: line.y2,
+      stroke: color,
+      "stroke-width": 7,
+      "stroke-linecap": "round",
+      "data-line-direction": line.direction
+    }));
+  });
+  lattice.nodes.forEach(node => {
+    svg.append(svgEl("circle", {
+      cx: node.x,
+      cy: node.y,
+      r: 4.2,
+      fill: "#b9c6d7",
+      stroke: "#ffffff",
+      "stroke-width": 1,
+      "data-node-depth": node.depth
+    }));
+  });
   const notes = batchPanelNotes(batch);
   notes.grid.forEach((line, index) => {
     svg.append(svgEl("text", { x: 34, y: 342 + index * 23, class: "svg-small" }, line));
