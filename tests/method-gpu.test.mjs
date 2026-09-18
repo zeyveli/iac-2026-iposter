@@ -4,6 +4,7 @@ import * as batching from "../pages/batching/app.js";
 import {
   multigridConfig,
   multigridDiagramModel,
+  operatorConnectorLabels,
   operatorDiagramCopy,
   operatorStages
 } from "../pages/multigrid/app.js";
@@ -105,6 +106,12 @@ test("memory access highlights adjacent systems and relabels transverse coordina
 test("matrix-free pathway carries phi through gradient and divergence without a global matrix", () => {
   assert.deepEqual(operatorStages.map(stage => stage.symbol), ["φ", "Gₕφ", "DₕGₕφ"]);
   assert.match(operatorStages.at(-1).detail, /without assembling a global matrix/i);
+});
+
+test("compact operator labels stay entirely above the stage cards", () => {
+  assert.deepEqual(operatorConnectorLabels.map(label => label.text), ["compact Gₕ", "compact Dₕ"]);
+  assert.ok(operatorConnectorLabels.every(label => label.y + label.fontSize <= 160));
+  assert.ok(operatorConnectorLabels.every(label => label.textAnchor === "middle"));
 });
 
 test("GMG configuration preserves the seven-point preconditioner and line-solve reuse", () => {
