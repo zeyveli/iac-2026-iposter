@@ -36,11 +36,11 @@ export function batchLatticeGeometry(direction) {
   if (!Object.hasOwn(grid, direction)) throw new Error(`Unknown grid direction: ${direction}`);
 
   const dimensions = { x: 6, y: 5, z: 3 };
-  const origin = { x: 72, y: 292 };
+  const origin = { x: 170, y: 292 };
   const basis = {
-    x: { x: 42, y: 0 },
+    x: { x: 84, y: 0 },
     y: { x: 0, y: -38 },
-    z: { x: 35, y: -20 }
+    z: { x: 55, y: -26 }
   };
   const point = (x, y, z) => ({
     x: origin.x + x * basis.x.x + y * basis.y.x + z * basis.z.x,
@@ -55,9 +55,9 @@ export function batchLatticeGeometry(direction) {
   }
 
   const lineAnchors = {
-    x: [0, 1, 2, 3].map(y => ({ start: [0, y, 1], end: [dimensions.x - 1, y, 1] })),
-    y: [0, 2, 4, 5].map(x => ({ start: [x, 0, 1], end: [x, dimensions.y - 1, 1] })),
-    z: [1, 2, 3, 4].map(x => ({ start: [x, 2, 0], end: [x, 2, dimensions.z - 1] }))
+    x: [0, 1, 2, 3, 4].map(y => ({ start: [0, y, 1], end: [dimensions.x - 1, y, 1] })),
+    y: [0, 1, 2, 3, 4, 5].map(x => ({ start: [x, 0, 1], end: [x, dimensions.y - 1, 1] })),
+    z: [0, 1, 2, 3, 4, 5].map(x => ({ start: [x, 2, 0], end: [x, 2, dimensions.z - 1] }))
   };
   const lines = lineAnchors[direction].map(({ start, end }) => {
     const a = point(...start);
@@ -78,19 +78,28 @@ export function batchLatticeGeometry(direction) {
   return { nodes, lines, planes };
 }
 
+export function batchDiagramModel(batch) {
+  return {
+    panels: [{ x: 8, y: 12, width: 884, height: 394 }],
+    cards: [],
+    lattice: batchLatticeGeometry(batch.direction)
+  };
+}
+
 const dirColor = { x: "#245eb6", y: "#f45c8b", z: "#1572a1" };
 
 function drawBatch(container, batch) {
   const svg = makeSvg(container, `Batched ${batch.direction}-direction line systems`, "0 0 900 430");
-  svg.append(svgEl("rect", { x: 8, y: 12, width: 420, height: 394, rx: 20, class: "svg-panel" }));
-  svg.append(svgEl("rect", { x: 452, y: 12, width: 440, height: 394, rx: 20, class: "svg-panel" }));
-  svg.append(svgEl("text", { x: 34, y: 52, class: "svg-label" }, "Structured grid: selected line family"));
-  svg.append(svgEl("text", { x: 478, y: 52, class: "svg-label" }, "Independent systems → GPU batch"));
+  const model = batchDiagramModel(batch);
+  model.panels.forEach(panel => {
+    svg.append(svgEl("rect", { ...panel, rx: 20, class: "svg-panel" }));
+  });
+  svg.append(svgEl("text", { x: 34, y: 52, class: "svg-label" }, "Structured 3D grid: selected line family"));
 
   const color = dirColor[batch.direction];
   const axes = batch.varyingAxes.join("–");
   svg.append(svgEl("text", { x: 34, y: 80, class: "svg-small" }, `${batch.systems.toLocaleString()} lines span the ${axes} cross-section`));
-  const lattice = batchLatticeGeometry(batch.direction);
+  const lattice = model.lattice;
   lattice.planes.forEach(plane => {
     svg.append(svgEl("polygon", {
       points: plane.points,
@@ -127,16 +136,6 @@ function drawBatch(container, batch) {
   const notes = batchPanelNotes(batch);
   notes.grid.forEach((line, index) => {
     svg.append(svgEl("text", { x: 34, y: 342 + index * 23, class: "svg-small" }, line));
-  });
-
-  const cardPositions = [[490, 100], [634, 100], [778, 100], [490, 225], [634, 225], [778, 225]];
-  cardPositions.forEach(([x, y], index) => {
-    svg.append(svgEl("rect", { x, y, width: 108, height: 86, rx: 12, fill: index === 1 ? "#eaf2fb" : "#f7f8f6", stroke: color, "stroke-width": 2 }));
-    for (let n = 0; n < 6; n++) svg.append(svgEl("circle", { cx: x + 18 + n * 14, cy: y + 37, r: 5, fill: color }));
-    svg.append(svgEl("text", { x: x + 14, y: y + 68, class: "svg-small" }, `line ${index + 1}`));
-  });
-  notes.gpu.forEach((line, index) => {
-    svg.append(svgEl("text", { x: 478, y: 342 + index * 23, class: "svg-small" }, index === 0 ? `… ${line}` : line));
   });
 }
 
