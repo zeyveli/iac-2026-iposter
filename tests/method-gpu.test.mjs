@@ -8,23 +8,23 @@ const { describeBatch, gpuParallelismNote } = batching;
 test("batch selection reports the independent line systems for every grid direction", () => {
   assert.deepEqual(describeBatch("x"), {
     direction: "x",
-    lineLength: 16,
-    systems: 96,
-    systemFactors: [12, 8],
+    lineLength: 6,
+    systems: 15,
+    systemFactors: [5, 3],
     varyingAxes: ["y", "z"]
   });
   assert.deepEqual(describeBatch("y"), {
     direction: "y",
-    lineLength: 12,
-    systems: 128,
-    systemFactors: [16, 8],
+    lineLength: 5,
+    systems: 18,
+    systemFactors: [6, 3],
     varyingAxes: ["x", "z"]
   });
   assert.deepEqual(describeBatch("z"), {
     direction: "z",
-    lineLength: 8,
-    systems: 192,
-    systemFactors: [16, 12],
+    lineLength: 3,
+    systems: 30,
+    systemFactors: [6, 5],
     varyingAxes: ["x", "y"]
   });
 });
@@ -38,12 +38,11 @@ test("batch diagram splits its panel notes into short contained lines", () => {
   assert.equal(typeof batching.batchPanelNotes, "function");
   assert.deepEqual(batching.batchPanelNotes(describeBatch("x")), {
     grid: [
-      "One highlighted stroke = one",
-      "length-16 tridiagonal solve",
+      "One highlighted stroke = one independent system",
       "Transverse coordinates identify each system."
     ],
     gpu: [
-      "96 direct line solves",
+      "15 direct line solves",
       "in one batched launch",
       "Shared factorization · independent RHS"
     ]
